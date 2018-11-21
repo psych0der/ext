@@ -24,6 +24,7 @@ module.exports = {
     plugins: [
         new CopyWebpackPlugin([
             { from: 'src/icons', to: '../icons' },
+            { from: 'src/js/includes', to: '../js' },
             { from: 'src/html', to: '../html' },
             { from: 'src/css', to: '../css' },
             { from: 'src/manifest.json', to: '../' }
