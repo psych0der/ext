@@ -1,9 +1,24 @@
-import { InboxSDKInstance } from "inboxsdk";
-import settings from "../settings";
+import { InboxSDKInstance } from "inboxsdk"
+import settings from "../settings"
+import Tribute from 'tributejs/src/Tribute'
 
 export default function app(sdk: InboxSDKInstance, googleToken: string) {
+  // add tribute css
+  addCss(require('tributejs/dist/tribute.css').toString())
   sdk.Compose.registerComposeViewHandler((composeView) => {
-    console.log('new compose view')
+    const t = new Tribute({
+      trigger: '{',
+      selectTemplate(item: any) {
+        return `{${item.original.value}}`
+      },
+      values: [
+        { key: 'FirstName', value: 'FirstName' },
+        { key: 'LastName', value: 'LastName' }
+      ]
+    })
+    // @ts-ignore
+    t.attach(composeView.getBodyElement().closest('.inboxsdk__compose').querySelector('input[name="subjectbox"]'))
+    t.attach(composeView.getBodyElement())
     composeView.addButton({
       title: 'Test',
       type: 'SEND_ACTION',
@@ -20,10 +35,10 @@ function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeVi
   const recepients = composeView.getToRecipients()
   recepients.forEach((rec) => {
     sendEmail({
-      subject,
       message,
+      recepient: rec,
+      subject,
       userEmail,
-      recepient: rec
     }, googleToken)
   })
 }
@@ -61,6 +76,12 @@ function sendEmail(options: ISendEmailOptions, googleToken: string) {
   }).catch((err) => {
     console.log(err)
   })
+}
+
+function addCss(css: string) {
+  const s = document.createElement('style')
+  s.innerHTML = css
+  document.body.appendChild(s)
 }
 
 function Base64EncodeUrl(str: string) {
