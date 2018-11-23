@@ -8,7 +8,8 @@
     "client_id": "193054564435-piom2abbaujk94h9sebvlg83i20ej2ks.apps.googleusercontent.com",
     "scopes":[
       "https://mail.google.com/",
-      "https://www.googleapis.com/auth/spreadsheets.readonly"
+      "https://www.googleapis.com/auth/spreadsheets.readonly",
+      "https://www.googleapis.com/auth/drive.metadata.readonly"
     ]
   },
   "browser_action": {

@@ -1,14 +1,18 @@
 import { InboxSDKInstance } from "inboxsdk"
 import settings from "../settings"
 import Tribute from 'tributejs/src/Tribute'
+import mergeModalContent from "./components/mail-merge";
+import { requestHeaders, Base64EncodeUrl, addClass, createElement, addCss } from "./components/utils";
+import mailMerge from "./components/mail-merge";
+require('tributejs/dist/tribute.css')
 require('../../css/style.scss')
 
 export default function app(sdk: InboxSDKInstance, googleToken: string) {
+  console.log(googleToken)
   // add tribute css
   setTimeout(() => {
-    mailMerge(sdk)
-  }, 3000)
-  addCss(require('tributejs/dist/tribute.css').toString())
+    mailMerge(sdk, googleToken)
+  }, 5000)
   sdk.Compose.registerComposeViewHandler((composeView) => {
     addAutocomplete(composeView)
     composeView.addButton({
@@ -19,27 +23,6 @@ export default function app(sdk: InboxSDKInstance, googleToken: string) {
       }
     })
   })
-}
-
-function mailMerge(sdk: InboxSDKInstance){
-  const p = document.getElementById('aso_search_form_anchor').parentElement
-  const btn = createElement('button')
-  const modal = createElement('div')
-  modal.innerText = 'Test content'
-  p.style.display = 'flex'
-  addClass(btn, 'merge-btn')
-  btn.innerText = 'Merge'
-  btn.addEventListener('click', () => {
-    sdk.Widgets.showModalView({
-      el: modal,
-      title: 'Test modal'
-    })
-  })
-  p.appendChild(btn)
-}
-
-function createModalContent() {
-  
 }
 
 function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
@@ -94,10 +77,7 @@ function sendEmail(options: ISendEmailOptions, googleToken: string) {
   }
   fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/send?key=${settings.googleApiKey}`, {
     body: JSON.stringify(body),
-    headers: {
-      'Authorization': `Bearer ${googleToken}`,
-      'Content-Type': 'application/json'
-    },
+    headers: requestHeaders(googleToken),
     method: 'POST'
   }).then((res) => {
     return res.json()
@@ -106,24 +86,4 @@ function sendEmail(options: ISendEmailOptions, googleToken: string) {
   }).catch((err) => {
     console.log(err)
   })
-}
-
-function createElement(el: string){
-  const e = document.createElement(el)
-  e.id = 'gmassclone'
-  return e
-}
-
-function addClass(el: HTMLElement, clss: string){
-  el.classList.add(clss)
-}
-
-function addCss(css: string) {
-  const s = document.createElement('style')
-  s.innerHTML = css
-  document.body.appendChild(s)
-}
-
-function Base64EncodeUrl(str: string) {
-  return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=+$/, '');
 }
