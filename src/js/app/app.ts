@@ -1,24 +1,16 @@
 import { InboxSDKInstance } from "inboxsdk"
 import settings from "../settings"
 import Tribute from 'tributejs/src/Tribute'
+require('../../css/style.scss')
 
 export default function app(sdk: InboxSDKInstance, googleToken: string) {
   // add tribute css
+  setTimeout(() => {
+    mailMerge(sdk)
+  }, 3000)
   addCss(require('tributejs/dist/tribute.css').toString())
   sdk.Compose.registerComposeViewHandler((composeView) => {
-    const t = new Tribute({
-      trigger: '{',
-      selectTemplate(item: any) {
-        return `{${item.original.value}}`
-      },
-      values: [
-        { key: 'FirstName', value: 'FirstName' },
-        { key: 'LastName', value: 'LastName' }
-      ]
-    })
-    // @ts-ignore
-    t.attach(composeView.getBodyElement().closest('.inboxsdk__compose').querySelector('input[name="subjectbox"]'))
-    t.attach(composeView.getBodyElement())
+    addAutocomplete(composeView)
     composeView.addButton({
       title: 'Test',
       type: 'SEND_ACTION',
@@ -27,6 +19,44 @@ export default function app(sdk: InboxSDKInstance, googleToken: string) {
       }
     })
   })
+}
+
+function mailMerge(sdk: InboxSDKInstance){
+  const p = document.getElementById('aso_search_form_anchor').parentElement
+  const btn = createElement('button')
+  const modal = createElement('div')
+  modal.innerText = 'Test content'
+  p.style.display = 'flex'
+  addClass(btn, 'merge-btn')
+  btn.innerText = 'Merge'
+  btn.addEventListener('click', () => {
+    sdk.Widgets.showModalView({
+      el: modal,
+      title: 'Test modal'
+    })
+  })
+  p.appendChild(btn)
+}
+
+function createModalContent() {
+  
+}
+
+function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
+  const t = new Tribute({
+    trigger: '{',
+    selectTemplate(item: any) {
+      return `{${item.original.value}}`
+    },
+    values: [
+      { key: 'FirstName', value: 'FirstName' },
+      { key: 'LastName', value: 'LastName' }
+    ]
+  })
+  // subject
+  t.attach(composeView.getBodyElement().closest('.inboxsdk__compose').querySelector('input[name="subjectbox"]'))
+  // message content
+  t.attach(composeView.getBodyElement())
 }
 
 function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeView, userEmail: string) {
@@ -76,6 +106,16 @@ function sendEmail(options: ISendEmailOptions, googleToken: string) {
   }).catch((err) => {
     console.log(err)
   })
+}
+
+function createElement(el: string){
+  const e = document.createElement(el)
+  e.id = 'gmassclone'
+  return e
+}
+
+function addClass(el: HTMLElement, clss: string){
+  el.classList.add(clss)
 }
 
 function addCss(css: string) {

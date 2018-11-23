@@ -19,6 +19,14 @@ module.exports = {
             { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
             { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
             { test: /\.css$/, loader: "css-loader" },
+            {
+                test: /\.scss$/,
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    "sass-loader"
+                ]
+            }
         ]
     },
 
@@ -27,7 +35,6 @@ module.exports = {
             { from: 'src/icons', to: '../icons' },
             { from: 'src/js/includes', to: '../js' },
             { from: 'src/html', to: '../html' },
-            { from: 'src/css', to: '../css' },
             { from: 'src/manifest.json', to: '../' }
         ])
     ]
