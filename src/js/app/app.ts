@@ -7,6 +7,7 @@ import mailMerge from "./components/mail-merge";
 require('tributejs/dist/tribute.css')
 require('../../css/style.scss')
 
+
 export default function app(sdk: InboxSDKInstance, googleToken: string) {
   console.log(googleToken)
   // add tribute css
@@ -36,6 +37,9 @@ function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
       { key: 'LastName', value: 'LastName' }
     ]
   })
+  // expose tribute on the composeView instance
+  // @ts-ignore
+  composeView.tribute = t
   // subject
   t.attach(composeView.getBodyElement().closest('.inboxsdk__compose').querySelector('input[name="subjectbox"]'))
   // message content
@@ -46,7 +50,8 @@ function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeVi
   const subject = composeView.getSubject()
   const message = composeView.getHTMLContent()
   const recepients = composeView.getToRecipients()
-  recepients.forEach((rec) => {
+  recepients.forEach((rec, index) => {
+    // add placeholders to message and subject
     sendEmail({
       message,
       recepient: rec,

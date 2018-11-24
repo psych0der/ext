@@ -24,3 +24,8 @@ export function requestHeaders(googleToken: string) {
     'Content-Type': 'application/json'
   }
 }
+
+export function isEmail(str: string){
+  const r = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  return r.test(str)
+}
