@@ -4,9 +4,9 @@ import Tribute from 'tributejs/src/Tribute'
 import mergeModalContent from "./components/mail-merge";
 import { requestHeaders, Base64EncodeUrl, addClass, createElement, addCss } from "./components/utils";
 import mailMerge from "./components/mail-merge";
+import { defaultTokens, defaultTokenData, replaceTokens } from "./components/tokens"
 require('tributejs/dist/tribute.css')
 require('../../css/style.scss')
-
 
 export default function app(sdk: InboxSDKInstance, googleToken: string) {
   console.log(googleToken)
@@ -32,10 +32,12 @@ function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
     selectTemplate(item: any) {
       return `{${item.original.value}}`
     },
-    values: [
-      { key: 'FirstName', value: 'FirstName' },
-      { key: 'LastName', value: 'LastName' }
-    ]
+    values: defaultTokens.map((token) => {
+      return {
+        key: token,
+        value: token
+      }
+    })
   })
   // expose tribute on the composeView instance
   // @ts-ignore
@@ -47,11 +49,26 @@ function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
 }
 
 function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeView, userEmail: string) {
-  const subject = composeView.getSubject()
-  const message = composeView.getHTMLContent()
+  let subject = composeView.getSubject()
+  let message = composeView.getHTMLContent()
   const recepients = composeView.getToRecipients()
   recepients.forEach((rec, index) => {
     // add placeholders to message and subject
+    let tokenData: any
+    const name = rec.name === null ? '' : rec.name
+    // @ts-ignore
+    if (composeView.customData !== undefined) {
+      // use custom data
+      // @ts-ignore
+      tokenData = composeView.customTokenData(index)
+    } else {
+      tokenData = defaultTokenData(userEmail, name)
+    }
+    console.log(subject)
+    subject = replaceTokens(tokenData, subject)
+    console.log(subject)
+    message = replaceTokens(tokenData, message)
+
     sendEmail({
       message,
       recepient: rec,

@@ -84,7 +84,9 @@ function composeFromFile(fileId: string) {
   }).then((res) => {
     const sheet = res.sheets[0]
     const data = sheet.data[0].rowData
+    const rowData = data.splice(1)
     const header = data[0].values
+    const headerTokens = createTokensFromHeader(header)
     const firstRow = data[1].values
     const emailIndex = getEmailIndex(firstRow)
     if (emailIndex === null) {
@@ -95,7 +97,14 @@ function composeFromFile(fileId: string) {
       // set tribute collection values to the header names
       // @ts-ignore
       composeView.tribute.collection[0].values = placeholders
-      composeView.setToRecipients(getEmails(emailIndex, data.splice(1)))
+      // set custom tokens
+      // @ts-ignore
+      composeView.tokens = headerTokens
+      // @ts-ignore
+      composeView.customTokenData = customTokenData(header, rowData)
+      // @ts-ignore
+      composeView.customData = rowData
+      composeView.setToRecipients(getEmails(emailIndex, rowData))
     })
   }).catch((err) => {
     console.log(err)
@@ -128,4 +137,21 @@ function createAutocompleteVals(header: any[]) {
     })
   })
   return p
+}
+
+function createTokensFromHeader(header: any[]) {
+  const tokens: any[] = []
+  header.forEach((h) => {
+    tokens.push(h.formattedValue)
+  })
+  return tokens
+}
+
+function customTokenData(header: string[], rowData: any[]){
+  return (index: number) => {
+    const d: any = {}
+    header.forEach((h, i) => {
+      d[h] = rowData[index].values[i].formattedValue
+    })
+  }
 }
