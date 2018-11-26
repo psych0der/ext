@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "GMass Clone",
   "description": "A clone of GMass",
-  "version": "0.1",
+  "version": "0.2",
   "key": "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArJknFAoQBfCLUrungI3jJiu7uL/nG/a4BUljCgA6vv692Lw1uk6iWqUvBJPdXCsiRZeuQXekU4HdaCvJF3jFnxXn2W4/lDz8DCix4iGO7h+IfmJHg/z0l3CIx4X9q6ABbDSN2pzYgJZ9cOmrJ3bHZloTkiY5RZQVbZiRUUT2iy1HpIFVP8rBb8jNxG5q95Ga+qUoOqeF+XAMMWMucudY9AfH4dIHxlMd62vv6K1g52P8w632tIEcUCYWNfm7rfDaPGT2fP5GFGDrUO7TZ8GVDJw89L53mG/Ok7i9mCTFQGRXbFEhx8D22dw5I3/vIGBRiB2ERAbbRYmhejlN4ms7uQIDAQAB-----END PUBLIC KEY-----",
   "oauth2": {
     "client_id": "193054564435-piom2abbaujk94h9sebvlg83i20ej2ks.apps.googleusercontent.com",

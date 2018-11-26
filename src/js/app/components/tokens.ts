@@ -11,10 +11,10 @@ export function defaultTokenData(email: string, name: string) {
   const lastName = split[1]
 
   return {
-    'EmailAddress': email,
-    'FullName': name,
-    'FirstName': firstName,
-    'LastName': lastName
+    EmailAddress: email,
+    FirstName: firstName,
+    FullName: name,
+    LastName: lastName
   }
 }
 

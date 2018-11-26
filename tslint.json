@@ -5,8 +5,10 @@
     ],
     "jsRules": {},
     "rules": {
+        "quotemark": false,
         "trailing-comma": false,
-        "semicolon": false
+        "semicolon": false,
+        "no-console": false
     },
     "rulesDirectory": []
 }

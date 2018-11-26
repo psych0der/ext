@@ -1,3 +1,4 @@
+import { queue } from 'async'
 import { InboxSDKInstance } from "inboxsdk"
 import settings from "../settings"
 import Tribute from 'tributejs/src/Tribute'
@@ -49,12 +50,18 @@ function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
 }
 
 function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeView, userEmail: string) {
-  let subject = composeView.getSubject()
-  let message = composeView.getHTMLContent()
+  const subject = composeView.getSubject()
+  const message = composeView.getHTMLContent()
   const recepients = composeView.getToRecipients()
+  const q = queue(sendEmail, 2)
+  q.drain = () => {
+    console.log('done')
+  }
   recepients.forEach((rec, index) => {
     // add placeholders to message and subject
     let tokenData: any
+    let msg: string
+    let sbjct: string
     const name = rec.name === null ? '' : rec.name
     // @ts-ignore
     if (composeView.customData !== undefined) {
@@ -64,32 +71,34 @@ function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeVi
     } else {
       tokenData = defaultTokenData(userEmail, name)
     }
-    console.log(subject)
-    subject = replaceTokens(tokenData, subject)
-    console.log(subject)
-    message = replaceTokens(tokenData, message)
+    sbjct = replaceTokens(tokenData, subject)
+    msg = replaceTokens(tokenData, message)
 
-    sendEmail({
-      message,
-      recepient: rec,
-      subject,
+    q.push({
+      googleToken,
+      message: msg,
+      recepient: rec.emailAddress,
+      subject: sbjct,
       userEmail,
-    }, googleToken)
+    }, (res) => {
+      console.log('email sent', res)
+    })
   })
 }
 
 interface ISendEmailOptions {
   subject: string,
   message: string,
-  recepient: InboxSDK.Common.Contact,
-  userEmail: string
+  recepient: string,
+  userEmail: string,
+  googleToken: string
 }
 
-function sendEmail(options: ISendEmailOptions, googleToken: string) {
+function sendEmail(options: ISendEmailOptions, cb: (err: null | any, res?: any) => void) {
   const message = [
     'Content-Type: text/html; charset="UTF-8";\r\n',
     'MIME-Version: 1.0\r\n',
-    `to: ${options.recepient.emailAddress}\r\n`,
+    `to: ${options.recepient}\r\n`,
     `from: ${options.userEmail}\r\n`,
     `subject: ${options.subject}\r\n\r\n`,
     `${options.message}\r\n`
@@ -99,13 +108,13 @@ function sendEmail(options: ISendEmailOptions, googleToken: string) {
   }
   fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/send?key=${settings.googleApiKey}`, {
     body: JSON.stringify(body),
-    headers: requestHeaders(googleToken),
+    headers: requestHeaders(options.googleToken),
     method: 'POST'
   }).then((res) => {
     return res.json()
   }).then((res) => {
-    console.log(res)
+    cb(null, res)
   }).catch((err) => {
-    console.log(err)
+    cb(err)
   })
 }
