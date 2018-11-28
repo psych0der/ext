@@ -12,24 +12,47 @@ let gToken: string
 export default function mailMerge(sdk: InboxSDKInstance, googleToken: string) {
   ixsdk = sdk
   gToken = googleToken
-  const p = document.getElementById('aso_search_form_anchor').parentElement
-  const btn = createElement('button')
-
-  p.style.display = 'flex'
-  addClass(btn, 'merge-btn')
-  btn.innerText = 'Merge'
-  btn.addEventListener('click', () => {
-    const content = mergeModalContent()
-    sdk.Widgets.showModalView({
+  createMergeBtn(() => {
+    const content = mergeModalContent((msg) => {
+      ixsdk.ButterBar.showError({
+        text: msg
+      })
+      modal.close()
+    }, () => {
+      modal.close()
+    })
+    const modal = sdk.Widgets.showModalView({
       el: content,
-      title: 'Select Spreadsheet'
+      title: 'Select Spreadsheet',
     })
   })
-  p.appendChild(btn)
+
 }
 
-function mergeModalContent() {
+function createMergeBtn(onClick: () => void) {
+  const p = document.getElementById('aso_search_form_anchor').parentElement
   const div = createElement('div')
+  const btn = createElement('div')
+
+  p.style.display = 'flex'
+  div.classList.add('inboxsdk__compose_sendButton')
+  div.style.alignSelf = 'center'
+  div.setAttribute('aria-label', 'Select a Spreadsheet')
+  div.setAttribute('role', 'button')
+  div.setAttribute('data-tooltip', 'Select a Spreadsheet')
+  div.appendChild(btn)
+
+  btn.classList.add('inboxsdk__button_icon')
+  btn.innerText = 'Merge'
+  btn.addEventListener('click', onClick)
+
+  addClass(btn, 'merge-btn')
+  p.appendChild(div)
+}
+
+function mergeModalContent(onError: (msg: string) => void, onComposeCreated: () => void) {
+  const div = createElement('div')
+  const content = createElement('div')
   const load = loader()
   const url = `https://www.googleapis.com/drive/v3/files?key=${settings.googleApiKey}&q=mimeType='application/vnd.google-apps.spreadsheet'`
   fetch(url, {
@@ -37,33 +60,40 @@ function mergeModalContent() {
   }).then((res) => {
     return res.json()
   }).then((res) => {
-    const f = form(res.files)
+    const f = form(res.files, onError, onComposeCreated)
     load.remove()
     div.appendChild(f)
   }).catch((err) => {
     console.log(err)
   })
 
+  content.innerHTML = `
+  <p>Select a spreadsheet below to create a new mail campaign.</p>
+  <p>The spreadsheet must contain email addresses.</p>`
+  div.append(content)
   div.appendChild(load)
 
   return div
 }
 
-function form(files: IFile[]) {
+function form(files: IFile[], onError: (msg: string) => void, onComposeCreated: () => void) {
   const div = createElement('div')
   const btn = createElement('button')
   const select = createElement('select') as HTMLSelectElement
 
+  div.style.display = 'flex'
   select.innerHTML = `
     ${files.map((f) => {
       return `<option value='${f.id}'>${f.name}</option>`
     }).join()}
   `
+  addClass(select, 'merge-select')
   btn.innerText = 'Create'
   btn.addEventListener('click', () => {
     const fileId = select.value
-    composeFromFile(fileId)
+    composeFromSheet(fileId, onError, onComposeCreated)
   })
+  addClass(btn, 'merge-create-btn')
   div.append(select)
   div.append(btn)
   return div
@@ -71,12 +101,17 @@ function form(files: IFile[]) {
 
 function loader() {
   const div = createElement('div')
+  div.style.fontWeight = 'bold'
   div.innerText = 'Loading sheets from Google Drive...'
   return div
 }
 
-function composeFromFile(fileId: string) {
+function composeFromSheet(fileId: string, onError: (err: any) => void, onComposeCreated: () => void) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${fileId}?key=${settings.googleApiKey}&includeGridData=true`
+  onComposeCreated()
+  ixsdk.ButterBar.showMessage({
+    text: 'Creating email from spreadsheet.'
+  })
   fetch(url, {
     headers: requestHeaders(gToken),
   }).then((res) => {
@@ -84,7 +119,10 @@ function composeFromFile(fileId: string) {
   }).then((res) => {
     const sheet = res.sheets[0]
     const data = sheet.data[0].rowData
-    const rowData = data.splice(1)
+    if (data.length < 2) {
+      throw new Error('Spreadsheet must contain header and data!')
+    }
+    const rowData = data.slice(1)
     const header = data[0].values
     const headerTokens = createTokensFromHeader(header)
     const firstRow = data[1].values
@@ -101,12 +139,13 @@ function composeFromFile(fileId: string) {
       // @ts-ignore
       composeView.tokens = headerTokens
       // @ts-ignore
-      composeView.customTokenData = customTokenData(header, rowData)
+      composeView.customTokenData = customTokenData(headerTokens, rowData)
       // @ts-ignore
       composeView.customData = rowData
       composeView.setToRecipients(getEmails(emailIndex, rowData))
     })
   }).catch((err) => {
+    onError(err.message)
     console.log(err)
   })
 }
@@ -147,11 +186,13 @@ function createTokensFromHeader(header: any[]) {
   return tokens
 }
 
-function customTokenData(header: string[], rowData: any[]){
+function customTokenData(header: string[], rowData: any[]) {
   return (index: number) => {
     const d: any = {}
+    console.log(header)
     header.forEach((h, i) => {
       d[h] = rowData[index].values[i].formattedValue
     })
+    return d
   }
 }
