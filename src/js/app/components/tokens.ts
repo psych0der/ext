@@ -19,7 +19,7 @@ export function defaultTokenData(email: string, name: string) {
 }
 
 export function replaceTokens(tokenData: any, str: string): string {
-  const reg = /\{([a-zA-Z0-9|]+)\}/g
+  const reg = /\{([a-zA-Z0-9\s|]+)\}/g
   let newStr = str
   let match = reg.exec(newStr)
   while (match !== null) {

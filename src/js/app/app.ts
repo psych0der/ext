@@ -1,6 +1,7 @@
 import { queue } from 'async'
 import { InboxSDKInstance } from "inboxsdk"
 import settings from "../settings"
+// @ts-ignore
 import Tribute from 'tributejs/src/Tribute'
 import mergeModalContent from "./components/mail-merge";
 import { requestHeaders, Base64EncodeUrl, addClass, createElement, addCss } from "./components/utils";
@@ -9,16 +10,20 @@ import { defaultTokens, defaultTokenData, replaceTokens } from "./components/tok
 require('tributejs/dist/tribute.css')
 require('../../css/style.scss')
 
+let ixSdk: InboxSDKInstance
+
 export default function app(sdk: InboxSDKInstance, googleToken: string) {
   console.log(googleToken)
+  ixSdk = sdk
   // add tribute css
   setTimeout(() => {
     mailMerge(sdk, googleToken)
-  }, 5000)
+  }, 6000)
   sdk.Compose.registerComposeViewHandler((composeView) => {
     addAutocomplete(composeView)
     composeView.addButton({
-      title: 'Test',
+      iconClass: 'gmassclone-send',
+      title: 'Send',
       type: 'SEND_ACTION',
       onClick() {
         sendEmails(googleToken, composeView, sdk.User.getEmailAddress())
@@ -54,8 +59,17 @@ function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeVi
   const message = composeView.getHTMLContent()
   const recepients = composeView.getToRecipients()
   const q = queue(sendEmail, 2)
+  let sendCount = 0
+  const saveText = document.createElement('span')
+  saveText.innerText = 'Sending emails...'
+  const save = ixSdk.ButterBar.showSaving({
+    confirmationText: 'All emails sent!',
+    el: saveText,
+  })
+  composeView.close()
   q.drain = () => {
-    console.log('done')
+    // @ts-ignore
+    save.resolve()
   }
   recepients.forEach((rec, index) => {
     // add placeholders to message and subject
@@ -69,8 +83,9 @@ function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeVi
       // @ts-ignore
       tokenData = composeView.customTokenData(index)
     } else {
-      tokenData = defaultTokenData(userEmail, name)
+      tokenData = defaultTokenData(rec.emailAddress, name)
     }
+    console.log(tokenData)
     sbjct = replaceTokens(tokenData, subject)
     msg = replaceTokens(tokenData, message)
 
@@ -81,6 +96,8 @@ function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeVi
       subject: sbjct,
       userEmail,
     }, (res) => {
+      sendCount++
+      saveText.innerText = `Sent ${sendCount}/${recepients.length} emails.`
       console.log('email sent', res)
     })
   })

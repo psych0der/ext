@@ -1,8 +1,26 @@
-$id: 'gmassclone';
+$id: '#gmassclone';
+
+@mixin item {
+  height: 30px;
+  background-color: blue;
+  border-radius: 4px;
+  color: white;
+  border: none;
+  margin: 0 1px;
+}
 
 #{$id}{
-  .merge-btn {
-    width: 50px;
-    background-color: green;
+  .merge-create-btn {
+    @include item();
   }
+  .merge-select {
+    @include item();
+    flex-grow: 1;
+  }
+}
+
+.gmassclone-send::after {
+  font-size: 12px;
+  content: 'GMC Send';
+  vertical-align: middle;
 }
