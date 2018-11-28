@@ -38,6 +38,8 @@ isFirstTimeUser((isFirstTime) => {
               notifs.authFailed(() => {
                 auth(cb)
               })
+            } else {
+              notifs.authSuccess()
             }
           })
         })
