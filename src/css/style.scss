@@ -1,10 +1,21 @@
 $id: '#gmassclone';
+$bg-color: coral;
+
+@mixin font {
+  font-family: inherit;
+  font-size: .875rem;
+  color: white;
+  font-weight: 500;
+}
+
+@mixin item-colour {
+  background-color: $bg-color !important;
+}
 
 @mixin item {
-  height: 30px;
-  background-color: blue;
+  @include item-colour();
+  @include font();
   border-radius: 4px;
-  color: white;
   border: none;
   margin: 0 1px;
 }
@@ -14,13 +25,34 @@ $id: '#gmassclone';
     @include item();
   }
   .merge-select {
-    @include item();
+    @include font();
+    color: #484848;
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid $bg-color;
     flex-grow: 1;
+  }
+  .merge-select:focus {
+    outline: none;
   }
 }
 
+.gmassclone-btn {
+  @include font();
+  @include item-colour();
+  cursor: pointer;
+}
+
+.gmassclone-item {
+  @include item-colour();
+}
+
 .gmassclone-send::after {
-  font-size: 12px;
+  @include font();
+  font-weight: 500;
   content: 'GMC Send';
   vertical-align: middle;
+  position: relative;
+  top: -1px;
+  padding-right: 3px;
 }

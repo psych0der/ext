@@ -29,6 +29,9 @@ export default function app(sdk: InboxSDKInstance, googleToken: string) {
         sendEmails(googleToken, composeView, sdk.User.getEmailAddress())
       }
     })
+    document.querySelectorAll('.gmassclone-send').forEach((el) => {
+      el.parentElement.classList.add('gmassclone-btn')
+    })
   })
 }
 

@@ -32,21 +32,15 @@ export default function mailMerge(sdk: InboxSDKInstance, googleToken: string) {
 function createMergeBtn(onClick: () => void) {
   const p = document.getElementById('aso_search_form_anchor').parentElement
   const div = createElement('div')
-  const btn = createElement('div')
 
   p.style.display = 'flex'
-  div.classList.add('inboxsdk__compose_sendButton')
+  div.classList.add('inboxsdk__compose_sendButton', 'gmassclone-btn')
   div.style.alignSelf = 'center'
   div.setAttribute('aria-label', 'Select a Spreadsheet')
   div.setAttribute('role', 'button')
   div.setAttribute('data-tooltip', 'Select a Spreadsheet')
-  div.appendChild(btn)
-
-  btn.classList.add('inboxsdk__button_icon')
-  btn.innerText = 'Merge'
-  btn.addEventListener('click', onClick)
-
-  addClass(btn, 'merge-btn')
+  div.innerText = 'Merge'
+  div.addEventListener('click', onClick)
   p.appendChild(div)
 }
 
@@ -78,7 +72,7 @@ function mergeModalContent(onError: (msg: string) => void, onComposeCreated: () 
 
 function form(files: IFile[], onError: (msg: string) => void, onComposeCreated: () => void) {
   const div = createElement('div')
-  const btn = createElement('button')
+  const btn = createElement('div')
   const select = createElement('select') as HTMLSelectElement
 
   div.style.display = 'flex'
@@ -93,7 +87,8 @@ function form(files: IFile[], onError: (msg: string) => void, onComposeCreated: 
     const fileId = select.value
     composeFromSheet(fileId, onError, onComposeCreated)
   })
-  addClass(btn, 'merge-create-btn')
+  addClass(btn, 'gmassclone-btn')
+  addClass(btn, 'inboxsdk__compose_sendButton')
   div.append(select)
   div.append(btn)
   return div
