@@ -25,7 +25,20 @@ export function requestHeaders(googleToken: string) {
   }
 }
 
-export function isEmail(str: string){
+export function isEmail(str: string) {
   const r = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   return r.test(str)
+}
+
+export function waitForElement(selector: string, cb: (el: Element) => void) {
+  const maxTries = 500
+  let count = 0
+  const int = setInterval(() => {
+    count++
+    const el = document.querySelector(selector)
+    if (el !== null || count > maxTries) {
+      clearInterval(int)
+      cb(el)
+    }
+  }, 50)
 }

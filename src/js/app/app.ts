@@ -16,9 +16,13 @@ export default function app(sdk: InboxSDKInstance, googleToken: string) {
   console.log(googleToken)
   ixSdk = sdk
   // add tribute css
-  setTimeout(() => {
-    mailMerge(sdk, googleToken)
-  }, 6000)
+  waitForElement('#aso_search_form_anchor', (el) => {
+    if (el) {
+      mailMerge(sdk, googleToken)
+    } else {
+      window.location.reload()
+    }
+  })
   sdk.Compose.registerComposeViewHandler((composeView) => {
     addAutocomplete(composeView)
     composeView.addButton({
