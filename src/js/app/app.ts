@@ -4,7 +4,7 @@ import settings from "../settings"
 // @ts-ignore
 import Tribute from 'tributejs/src/Tribute'
 import mergeModalContent from "./components/mail-merge";
-import { requestHeaders, Base64EncodeUrl, addClass, createElement, addCss } from "./components/utils";
+import { requestHeaders, Base64EncodeUrl, addClass, createElement, addCss, waitForElement } from "./components/utils";
 import mailMerge from "./components/mail-merge";
 import { defaultTokens, defaultTokenData, replaceTokens } from "./components/tokens"
 require('tributejs/dist/tribute.css')
@@ -22,6 +22,20 @@ export default function app(sdk: InboxSDKInstance, googleToken: string) {
   sdk.Compose.registerComposeViewHandler((composeView) => {
     addAutocomplete(composeView)
     composeView.addButton({
+      iconClass: 'gmassclone-send-test',
+      title: 'Send Test',
+      type: 'SEND_ACTION',
+      onClick() {
+        const modal = ixSdk.Widgets.showModalView({
+          el: testEmailContent(sdk.User.getEmailAddress(), (emailAddress) => {
+            modal.close()
+            sendEmails(googleToken, composeView, sdk.User.getEmailAddress(), emailAddress)
+          }),
+          title: 'Send Test Email'
+        })
+      }
+    })
+    composeView.addButton({
       iconClass: 'gmassclone-send',
       title: 'Send',
       type: 'SEND_ACTION',
@@ -29,10 +43,32 @@ export default function app(sdk: InboxSDKInstance, googleToken: string) {
         sendEmails(googleToken, composeView, sdk.User.getEmailAddress())
       }
     })
-    document.querySelectorAll('.gmassclone-send').forEach((el) => {
+    document.querySelectorAll('.gmassclone-send, .gmassclone-send-test').forEach((el) => {
       el.parentElement.classList.add('gmassclone-btn')
     })
   })
+}
+
+function testEmailContent(defaultEmail: string, onClick: (emailAddress: string) => void) {
+  const div = createElement('div')
+  div.innerHTML = `
+    <div>
+      <p>Type an email address below to test your email campaign.</p>
+      <p>Make sure you have at least one email address in the "To" field of your email campaign.</p>
+      <p>If using a spreadsheet, personalization tokens will use values from the first row.</p>
+    </div>
+    <div style="display:flex; margin-top: 10px">
+      <input style="flex-grow: 1" type="text" class="gmassclone-input" 
+      placeholder="Email address" value="${defaultEmail}" />
+      <div class="inboxsdk__compose_sendButton gmassclone-btn">Send</div>
+    </div>
+  `
+  const input = div.querySelector('input')
+  const btn = div.querySelector('.gmassclone-btn')
+  btn.addEventListener('click', () => {
+    onClick(input.value)
+  })
+  return div
 }
 
 function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
@@ -57,7 +93,12 @@ function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
   t.attach(composeView.getBodyElement())
 }
 
-function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeView, userEmail: string) {
+function sendEmails(
+  googleToken: string,
+  composeView: InboxSDK.Compose.ComposeView,
+  userEmail: string,
+  testEmail?: string
+) {
   const subject = composeView.getSubject()
   const message = composeView.getHTMLContent()
   const recepients = composeView.getToRecipients()
@@ -69,13 +110,14 @@ function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeVi
     confirmationText: 'All emails sent!',
     el: saveText,
   })
-  composeView.close()
   q.drain = () => {
     // @ts-ignore
     save.resolve()
   }
-  recepients.forEach((rec, index) => {
+
+  for (let index = 0; index < recepients.length; index++) {
     // add placeholders to message and subject
+    const rec = recepients[index]
     let tokenData: any
     let msg: string
     let sbjct: string
@@ -88,14 +130,13 @@ function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeVi
     } else {
       tokenData = defaultTokenData(rec.emailAddress, name)
     }
-    console.log(tokenData)
     sbjct = replaceTokens(tokenData, subject)
     msg = replaceTokens(tokenData, message)
 
     q.push({
       googleToken,
       message: msg,
-      recepient: rec.emailAddress,
+      recepient: testEmail ? testEmail : rec.emailAddress,
       subject: sbjct,
       userEmail,
     }, (res) => {
@@ -103,7 +144,14 @@ function sendEmails(googleToken: string, composeView: InboxSDK.Compose.ComposeVi
       saveText.innerText = `Sent ${sendCount}/${recepients.length} emails.`
       console.log('email sent', res)
     })
-  })
+
+    if (testEmail) {
+      // this is a send test so we should break the loop
+      break
+    } else {
+      composeView.close()
+    }
+  }
 }
 
 interface ISendEmailOptions {

@@ -30,10 +30,12 @@ export default function mailMerge(sdk: InboxSDKInstance, googleToken: string) {
 }
 
 function createMergeBtn(onClick: () => void) {
-  const p = document.getElementById('aso_search_form_anchor').parentElement
+  const form = document.getElementById('aso_search_form_anchor')
+  const p = form.parentElement
   const div = createElement('div')
 
   p.style.display = 'flex'
+  form.style.flexGrow = '1'
   div.classList.add('inboxsdk__compose_sendButton', 'gmassclone-btn')
   div.style.alignSelf = 'center'
   div.setAttribute('aria-label', 'Select a Spreadsheet')

@@ -37,6 +37,19 @@ $bg-color: coral;
   }
 }
 
+.gmassclone-input {
+  @include font();
+  color: #484848;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid $bg-color;
+  flex-grow: 1;
+}
+
+.gmassclone-input:focus {
+  outline: none;
+}
+
 .gmassclone-btn {
   @include font();
   @include item-colour();
@@ -47,12 +60,21 @@ $bg-color: coral;
   @include item-colour();
 }
 
-.gmassclone-send::after {
+.gmassclone-send .gmassclone-send-test{
   @include font();
   font-weight: 500;
-  content: 'GMC Send';
   vertical-align: middle;
   position: relative;
   top: -1px;
+  
+}
+
+.gmassclone-send::after {
+  content: 'Send';
+  padding-right: 3px;
+}
+
+.gmassclone-send-test::after {
+  content: 'Test';
   padding-right: 3px;
 }
