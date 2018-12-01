@@ -176,7 +176,7 @@ function sendEmail(options: ISendEmailOptions, cb: (err: null | any, res?: any) 
     `${options.message}\r\n`
   ].join('')
   const body = {
-    raw: Base64EncodeUrl(btoa(message))
+    raw: Base64EncodeUrl(btoa(unescape(encodeURIComponent(message))))
   }
   fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/send?key=${settings.googleApiKey}`, {
     body: JSON.stringify(body),
