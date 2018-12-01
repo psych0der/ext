@@ -12,7 +12,7 @@ export function firstTime(onClickSignInBtn: () => void, onCloseNotif?: () => voi
   }, (notifId) => {
     removeNotifTimeout(notifId, 10000)
     onButtonClick(notifId, 0, onClickSignInBtn)
-    if (onCloseNotif === undefined) {
+    if (onCloseNotif !== undefined) {
       onClose(notifId, onCloseNotif)
     }
   })
@@ -32,7 +32,7 @@ export function notAuthorized(onClickSignInBtn: () => void, onCloseNotif?: () =>
   }, (notifId) => {
     removeNotifTimeout(notifId)
     onButtonClick(notifId, 0, onClickSignInBtn)
-    if (onCloseNotif === undefined) {
+    if (onCloseNotif !== undefined) {
       onClose(notifId, onCloseNotif)
     }
   })
@@ -52,7 +52,7 @@ export function authFailed(onTryAgainClick: () => void, onCloseNotif?: () => voi
   }, (notifId) => {
     removeNotifTimeout(notifId)
     onButtonClick(notifId, 0, onTryAgainClick)
-    if (onCloseNotif === undefined) {
+    if (onCloseNotif !== undefined) {
       onClose(notifId, onCloseNotif)
     }
   })

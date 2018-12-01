@@ -15,7 +15,7 @@ export function addCss(css: string) {
 }
 
 export function Base64EncodeUrl(str: string) {
-  return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=+$/, '');
+  return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=+$/, '')
 }
 
 export function requestHeaders(googleToken: string) {
