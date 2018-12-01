@@ -19,9 +19,10 @@ export function defaultTokenData(email: string, name: string) {
 }
 
 export function replaceTokens(tokenData: any, str: string): string {
-  const reg = /\{([a-zA-Z0-9\s|]+)\}/g
+  const reg = /\{(.[^\{]*?)\}/g
   let newStr = str
   let match = reg.exec(newStr)
+
   while (match !== null) {
     // right side of the split is the fallback
     // in case the token returns no result

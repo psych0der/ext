@@ -27,4 +27,30 @@ describe('token tests', () => {
     const expected = 'Hello Mate. Are you old?'
     expect(replaceTokens(tokenData, str)).to.eq(expected)
   })
+
+  it('skips broken token', () => {
+    const tokenData = {
+      'FirstName': 'Jim'
+    }
+    const str = 'Hello {FirstName|Mate. Are you {Age|old}?'
+    const expected = 'Hello {FirstName|Mate. Are you old?'
+    expect(replaceTokens(tokenData, str)).to.eq(expected)
+  })
+
+  it('replace UTF8 chars in tokens', () => {
+    const tokenData = {
+      '✓à': 'Test'
+    }
+    const str = 'Hello {✓à}.'
+    const expected = 'Hello Test.'
+    expect(replaceTokens(tokenData, str)).to.eq(expected)
+  })
+  it('replaces undefined UTF8 tokens with defaults', () => {
+    const tokenData = {
+      '✓à': ''
+    }
+    const str = 'Hello {✓à|Màte}.'
+    const expected = 'Hello Màte.'
+    expect(replaceTokens(tokenData, str)).to.eq(expected)
+  })
 })
