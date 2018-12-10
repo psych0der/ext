@@ -106,17 +106,29 @@ function sendEmails(
   const subject = composeView.getSubject()
   const message = composeView.getHTMLContent()
   const recepients = composeView.getToRecipients()
+  const errors: string[] = []
   const q = queue(sendEmail, 2)
   let sendCount = 0
   const saveText = document.createElement('span')
   saveText.innerText = 'Sending emails...'
-  const save = ixSdk.ButterBar.showSaving({
+  const saveMsg = ixSdk.ButterBar.showSaving({
     confirmationText: 'All emails sent!',
     el: saveText,
   })
   q.drain = () => {
     // @ts-ignore
-    save.resolve()
+    saveMsg.resolve()
+    if (errors.length > 0) {
+      ixSdk.ButterBar.showError({
+        html: `
+        <p>${errors.length} ${errors.length === 1 ? 'error' : 'errors'} occurred.</p>
+        ${errors.map((e) => {
+          return `<p>${e}</p>`
+        }).join('\n')}
+        `,
+        persistent: true
+      })
+    }
   }
 
   for (let index = 0; index < recepients.length; index++) {
@@ -143,7 +155,10 @@ function sendEmails(
       recepient: testEmail ? testEmail : rec.emailAddress,
       subject: sbjct,
       userEmail,
-    }, (res) => {
+    }, (err, res) => {
+      if (err) {
+        errors.push(err.message)
+      }
       sendCount++
       saveText.innerText = `Sent ${sendCount}/${recepients.length} emails.`
       console.log('email sent', res)
@@ -176,7 +191,8 @@ function sendEmail(options: ISendEmailOptions, cb: (err: null | any, res?: any) 
     `${options.message}\r\n`
   ].join('')
   const body = {
-    raw: Base64EncodeUrl(btoa(unescape(encodeURIComponent(message))))
+    raw: Base64EncodeUrl(btoa(unescape(encodeURIComponent(message)))),
+    labelIds: ["Label_14", "CAMPAIGN_TEST"]
   }
   fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/send?key=${settings.googleApiKey}`, {
     body: JSON.stringify(body),
@@ -185,8 +201,12 @@ function sendEmail(options: ISendEmailOptions, cb: (err: null | any, res?: any) 
   }).then((res) => {
     return res.json()
   }).then((res) => {
+    if (res.error) {
+      throw res.error
+    }
     cb(null, res)
   }).catch((err) => {
+    console.log(err)
     cb(err)
   })
 }
