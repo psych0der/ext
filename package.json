@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --require ts-node/register src/js/tests/*.ts",
+    "test": "TS_NODE_FILES='true' mocha --require ts-node/register src/js/tests/*.ts",
     "build:dev": "webpack --config webpack.dev.config.js --watch",
     "build": "webpack --config webpack.prod.config.js"
   },
@@ -17,6 +17,7 @@
     "@types/inboxsdk": "^2.0.1",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.10",
+    "@types/pouchdb": "^6.3.2",
     "async": "^2.6.1",
     "async-es": "^2.6.1",
     "awesome-typescript-loader": "^5.2.1",
@@ -25,6 +26,8 @@
     "css-loader": "^1.0.1",
     "mocha": "^5.2.0",
     "node-sass": "^4.10.0",
+    "pouchdb": "^7.0.0",
+    "pouchdb-find": "^7.0.0",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
     "sass-loader": "^7.1.0",
