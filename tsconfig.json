@@ -6,7 +6,9 @@
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
-        "jsx": "react"
+        "jsx": "react",
+        "lib": ["es5", "dom"],
+        "types": ["cypress"]
     },
     "include": [
         "*.tsx?"      
