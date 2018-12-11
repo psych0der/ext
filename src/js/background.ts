@@ -9,7 +9,13 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
       if (err) {
         sendResponse(null)
       } else {
-        sendResponse(token)
+        chrome.identity.getProfileUserInfo((userInfo) => {
+          console.log(userInfo)
+          sendResponse({
+            email: userInfo.email,
+            userId: userInfo.id
+          } as messages.ICheckAuthResponse)
+        })
       }
     })
   } else if (message.type === messages.Type.GMAIL_SIGN_IN) {

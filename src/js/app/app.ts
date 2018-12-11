@@ -7,14 +7,18 @@ import mergeModalContent from "./components/mail-merge";
 import { requestHeaders, Base64EncodeUrl, addClass, createElement, addCss, waitForElement } from "./components/utils";
 import mailMerge from "./components/mail-merge";
 import { defaultTokens, defaultTokenData, replaceTokens } from "./components/tokens"
+import { ICheckAuthResponse } from '../components/messages';
 require('tributejs/dist/tribute.css')
 require('../../css/style.scss')
 
 let ixSdk: InboxSDKInstance
+let userId: string
+let googleToken: string
 
-export default function app(sdk: InboxSDKInstance, googleToken: string) {
-  console.log(googleToken)
+export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
   ixSdk = sdk
+  googleToken = auth.token
+  userId = auth.userId
   // add tribute css
   waitForElement('#aso_search_form_anchor', (el) => {
     if (el) {
@@ -43,8 +47,22 @@ export default function app(sdk: InboxSDKInstance, googleToken: string) {
       iconClass: 'gmassclone-send',
       title: 'Send',
       type: 'SEND_ACTION',
-      onClick() {
-        sendEmails(googleToken, composeView, sdk.User.getEmailAddress())
+      onClick: async () => {
+        try {
+          const newCampaign = await fetch(`${settings.host}/campaign`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId })
+          }).then((res) => {
+            return res.json()
+          })
+          console.log(newCampaign)
+        } catch (e) {
+          console.log(e)
+        }
+        // sendEmails(googleToken, composeView, sdk.User.getEmailAddress())
       }
     })
     document.querySelectorAll('.gmassclone-send, .gmassclone-send-test').forEach((el) => {
@@ -97,7 +115,7 @@ function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
   t.attach(composeView.getBodyElement())
 }
 
-function sendEmails(
+async function sendEmails(
   googleToken: string,
   composeView: InboxSDK.Compose.ComposeView,
   userEmail: string,
@@ -123,8 +141,8 @@ function sendEmails(
         html: `
         <p>${errors.length} ${errors.length === 1 ? 'error' : 'errors'} occurred.</p>
         ${errors.map((e) => {
-          return `<p>${e}</p>`
-        }).join('\n')}
+            return `<p>${e}</p>`
+          }).join('\n')}
         `,
         persistent: true
       })
