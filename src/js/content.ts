@@ -1,6 +1,6 @@
 import { auth, getToken } from "./components/auth"
 import * as notifs from "./components/notifications"
-import { ICheckAuth, Type, IGmailSignIn, ICheckAuthResponse } from "./components/messages"
+import { ICheckAuth, Type, IGmailSignIn, ICheckAuthResponse, IClearToken } from "./components/messages"
 import settings from './settings'
 import app from './app/app'
 import { requestHeaders } from "./app/components/utils";
@@ -18,7 +18,19 @@ InboxSDK.load(1, settings.inboxSDK).then((sdk) => {
       }
       chrome.runtime.sendMessage(msg)
     } else {
-      app(sdk, res)
+      // check if the credentials match the current signed in google account
+      // if they don't, clear the token.
+      const email = sdk.User.getEmailAddress()
+      console.log(res)
+      if (email !== res.email) {
+        const msg: IClearToken = {
+          token: res.token,
+          type: Type.CLEAR_TOKEN
+        }
+        chrome.runtime.sendMessage(msg)
+      } else {
+        app(sdk, res)
+      }
     }
   })
 });

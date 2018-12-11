@@ -1,8 +1,9 @@
-export type ITypes = ICheckAuth
+export type ITypes = ICheckAuth | IGmailSignIn | IClearToken
 
 export enum Type {
   CHECK_AUTH,
-  GMAIL_SIGN_IN
+  GMAIL_SIGN_IN,
+  CLEAR_TOKEN
 }
 
 export interface ICheckAuth {
@@ -17,4 +18,9 @@ export interface ICheckAuthResponse {
 
 export interface IGmailSignIn {
   type: Type.GMAIL_SIGN_IN
+}
+
+export interface IClearToken {
+  type: Type.CLEAR_TOKEN,
+  token: string
 }

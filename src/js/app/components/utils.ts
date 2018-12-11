@@ -18,11 +18,14 @@ export function Base64EncodeUrl(str: string) {
   return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=+$/, '')
 }
 
-export function requestHeaders(googleToken: string) {
-  return {
-    'Authorization': `Bearer ${googleToken}`,
-    'Content-Type': 'application/json'
+export function requestHeaders(googleToken: string, contentJson: boolean = true) {
+  const headers: any = {
+    Authorization: `Bearer ${googleToken}`,
   }
+  if (contentJson === undefined || contentJson) {
+    headers['Content-Type'] = 'application/json'
+  }
+  return headers
 }
 
 export function isEmail(str: string) {
