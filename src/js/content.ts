@@ -6,11 +6,10 @@ import app from './app/app'
 import { requestHeaders } from "./app/components/utils";
 import { open } from "./app/components/db";
 
-// open the database
-open()
-
 // @ts-ignore
-InboxSDK.load(1, settings.inboxSDK).then((sdk) => {
+InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
+  // open the database
+  await open()
   // your app code using 'sdk' goes in here
   const m: ICheckAuth = {
     type: Type.CHECK_AUTH
