@@ -10,7 +10,7 @@ import { ICheckAuthResponse } from '../components/messages';
 import { sendCampaign, ICampaignResult } from './components/email';
 import { createCampaign, getUnsubEmails, updateCampaign, getCampaignReport } from "./components/server";
 import { createCampaign as dbCreateCampaign, getCampaignFromReport } from './components/db'
-import { createReportEmail, createReportHTML } from "./components/reports";
+import { createReportEmail, createReportHTML, updateCampaigns } from "./components/reports";
 require('tributejs/dist/tribute.css')
 require('../../css/style.scss')
 
@@ -23,7 +23,7 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
   googleToken = auth.token
   userId = auth.userId
   // update current campaigns, check historyId
-
+  updateCampaigns(userId, googleToken)
   // add tribute css
   waitForElement('#aso_search_form_anchor', (el) => {
     if (el) {

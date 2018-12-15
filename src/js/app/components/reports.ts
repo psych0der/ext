@@ -31,17 +31,26 @@ export async function updateCampaigns(userId: string, googleToken: string) {
   const h = await getHistoryId({
     userId
   })
-  if (h.historyId === null) {
+  const historyId = h.historyId
+  if (historyId === null) {
     // get the latest historyId and send it to the server
     const l = await getLatestHistoryId(googleToken)
     const latestHistoryId = l.historyId
-    updateHistoryId({
+    await updateHistoryId({
       historyId: latestHistoryId,
       userId
     })
   } else {
     // using the last saved historyId get all messages and cross reference
     // with existing campaign messageIds
+    const messages = await getHistory(historyId, googleToken)
+    console.log(messages)
+
+    // update the latest historyId
+    /*await updateHistoryId({
+      historyId: latestHistoryId,
+      userId
+    })*/
   }
 }
 
@@ -53,12 +62,23 @@ async function getLatestHistoryId(googleToken: string) {
   })
 }
 
+interface IHistoryResponse {
+  history: Array<{
+   messagesAdded: Array<{
+     message: {
+       id: string
+     }
+   }>
+  }>
+  historyId: string
+}
+
 function getHistory(historyId: string, googleToken: string) {
-  const url = `https://www.googleapis.com/gmail/v1/users/me/history?key=${settings.googleApiKey}&historyTypes="messageAdded"&labelId="UNREAD"&startHistoryId=${historyId}`
+  const url = `https://www.googleapis.com/gmail/v1/users/me/history?key=${settings.googleApiKey}&historyTypes=messageadded&labelId=UNREAD&startHistoryId=${historyId}`
   return fetch(url, {
     headers: requestHeaders(googleToken)
   }).then((res) => {
-    return res.json()
+    return res.json() as Promise<IHistoryResponse>
   })
 }
 
