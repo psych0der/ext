@@ -2,7 +2,8 @@
 import settings from '../../settings'
 import { requestHeaders } from './utils';
 import { sendEmail, createMessage } from './email'
-import { getHistoryId, updateHistoryId } from './server'
+import { getHistoryId, updateHistoryId, updateCampaign } from './server'
+import { getAllCampaigns } from './db';
 
 export async function createReportEmail(googleToken: string, reportTitle: string) {
   const message = createMessage({
@@ -43,15 +44,49 @@ export async function updateCampaigns(userId: string, googleToken: string) {
   } else {
     // using the last saved historyId get all messages and cross reference
     // with existing campaign messageIds
-    const messages = await getHistory(historyId, googleToken)
-    console.log(messages)
+    const res = await getHistory(historyId, googleToken)
+    console.log(res)
+    const currentCampaigns = await getAllCampaigns()
+    const newMessages = getNewMessageIds(res)
+    const campaignsToUpdate: AppRequest.IUpdateCampaign[] = []
+    console.log(currentCampaigns)
 
+    newMessages.forEach((msgId) => {
+      currentCampaigns.forEach((campaign) => {
+        console.log(campaign)
+        campaign.sentMessageIds.forEach((campMsgId) => {
+          console.log(campMsgId, msgId)
+          if (campMsgId === msgId) {
+            campaignsToUpdate.push({
+              campaignId: campaign.campaignId,
+              userId,
+              replies: 1
+            })
+          }
+        })
+      })
+    })
+    console.log(campaignsToUpdate)
+    const requests = campaignsToUpdate.map((body) => {
+      return updateCampaign(body)
+    })
+    await Promise.all(requests)
     // update the latest historyId
     /*await updateHistoryId({
       historyId: latestHistoryId,
       userId
     })*/
   }
+}
+
+function getNewMessageIds(historyRes: IHistoryResponse) {
+  const ids: string[] = []
+  historyRes.history.forEach((h) => {
+    h.messagesAdded.forEach((m) => {
+      ids.push(m.message.id)
+    })
+  })
+  return ids
 }
 
 async function getLatestHistoryId(googleToken: string) {
@@ -64,11 +99,11 @@ async function getLatestHistoryId(googleToken: string) {
 
 interface IHistoryResponse {
   history: Array<{
-   messagesAdded: Array<{
-     message: {
-       id: string
-     }
-   }>
+    messagesAdded: Array<{
+      message: {
+        id: string
+      }
+    }>
   }>
   historyId: string
 }
@@ -85,6 +120,7 @@ function getHistory(historyId: string, googleToken: string) {
 interface ICreateReportHTML {
   report: AppResponse.ICampaignReport
 }
+
 export function createReportHTML(opts: ICreateReportHTML) {
   const div = document.createElement('div')
   div.innerHTML = `

@@ -62,5 +62,18 @@ export function getCampaignFromReport(reportMessageId: string) {
     selector: {
       reportMessageId
     }
-  }) as Promise<PouchDB.Find.FindResponse<{campaignId: string}>>
+  }) as Promise<PouchDB.Find.FindResponse<{ campaignId: string }>>
+}
+
+export async function getAllCampaigns() {
+  const camps: ICampaignDoc[] = []
+  const campaigns = await DB.allDocs<ICampaignDoc>({
+    include_docs: true
+  })
+  campaigns.rows.forEach((c) => {
+    if (c.doc.campaignId) {
+      camps.push(c.doc)
+    }
+  })
+  return camps
 }
