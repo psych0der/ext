@@ -22,6 +22,8 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
   ixSdk = sdk
   googleToken = auth.token
   userId = auth.userId
+  // update current campaigns, check historyId
+  
   // add tribute css
   waitForElement('#aso_search_form_anchor', (el) => {
     if (el) {
@@ -30,6 +32,28 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
       window.location.reload()
     }
   })
+  // on message view - for loading reports
+  sdk.Conversations.registerMessageViewHandler(async (messageView) => {
+    try {
+      const id = await messageView.getMessageIDAsync()
+      const campaign = await getCampaignFromReport(id)
+      if (campaign.docs.length > 0) {
+        const report = await getCampaignReport({
+          campaignId: campaign.docs[0].campaignId,
+          userId
+        })
+        const messageEl = messageView.getBodyElement()
+        const messageContent = createReportHTML({
+          report
+        })
+        messageEl.appendChild(messageContent)
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  })
+
+  // composeView buttons
   sdk.Compose.registerComposeViewHandler((composeView) => {
     addAutocomplete(composeView)
     composeView.addButton({
