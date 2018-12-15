@@ -7,8 +7,8 @@ import { getHistoryId, updateHistoryId } from './server'
 export async function createReportEmail(googleToken: string, reportTitle: string) {
   const message = createMessage({
     from: settings.contactEmail,
-    message: 'Email campaign report',
-    recepient: 'mattb.prg@gmail.com',
+    message: 'Loading email campaign report...',
+    recepient: '',
     subject: reportTitle
   })
   const body = {
@@ -67,5 +67,31 @@ interface ICreateReportHTML {
 }
 export function createReportHTML(opts: ICreateReportHTML) {
   const div = document.createElement('div')
+  div.innerHTML = `
+    <table>
+      <tbody>
+        <tr>
+          <td>Sent messages</td>
+          <td>${opts.report.sentMessages}</td>
+        </tr>
+        <tr>
+          <td>Failed messages</td>
+          <td>${opts.report.failedMessages}</td>
+        </tr>
+        <tr>
+          <td>Opens</td>
+          <td>${opts.report.opens}</td>
+        </tr>
+        <tr>
+          <td>Replies</td>
+          <td>${opts.report.replies}</td>
+        </tr>
+        <tr>
+          <td>Unsubscribes</td>
+          <td>${opts.report.unsubscribes}</td>
+        </tr>
+      </tbody>
+    </table>
+  `
   return div
 }

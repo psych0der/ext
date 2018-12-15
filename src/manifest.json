@@ -21,7 +21,8 @@
     "identity.email",
     "storage",
     "identity",
-    "notifications"
+    "notifications",
+    "http://localhost:3000/*"
   ],
    "content_scripts": [
     {

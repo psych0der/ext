@@ -23,7 +23,7 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
   googleToken = auth.token
   userId = auth.userId
   // update current campaigns, check historyId
-  
+
   // add tribute css
   waitForElement('#aso_search_form_anchor', (el) => {
     if (el) {
@@ -43,6 +43,7 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
           userId
         })
         const messageEl = messageView.getBodyElement()
+        messageEl.innerText = ''
         const messageContent = createReportHTML({
           report
         })
@@ -87,8 +88,8 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
       type: 'SEND_ACTION',
       onClick: async () => {
         try {
-          const newCampaign = await createCampaign(userId)
-          const unSubEmails = await getUnsubEmails(userId)
+          const newCampaign = await createCampaign({ userId })
+          const unSubEmails = await getUnsubEmails({ userId })
           console.log(newCampaign, unSubEmails)
           sendCampaign({
             campaignId: newCampaign.campaignId,

@@ -14,11 +14,11 @@ export async function getCampaignReport(opts: AppRequest.ICampaignReport) {
 }
 
 export async function getUnsubEmails(opts: AppRequest.IAuth) {
-  return request<AppResponse.IGetUnSubEmails>(`${settings.host}/unsubscribe/list?userId=${opts.userId}`, 'GET', {})
+  return request<AppResponse.IGetUnSubEmails>(`${settings.host}/unsubscribe/list?userId=${opts.userId}`, 'GET', null)
 }
 
 export async function getHistoryId(opts: AppRequest.IAuth) {
-  return request<AppResponse.IGetHistoryId>(`${settings.host}/historyId?userId=${opts.userId}`, 'GET', {})
+  return request<AppResponse.IGetHistoryId>(`${settings.host}/historyId?userId=${opts.userId}`, 'GET', null)
 }
 
 export async function updateHistoryId(opts: AppRequest.IUpdateHistoryId) {
@@ -26,13 +26,16 @@ export async function updateHistoryId(opts: AppRequest.IUpdateHistoryId) {
 }
 
 export function request<T>(url: string, method: string, body: any) {
-  return fetch(url, {
+  const s: RequestInit = {
     method,
     headers: {
       'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  }).then((res) => {
+    }
+  }
+  if (body) {
+    s.body = JSON.stringify(body)
+  }
+  return fetch(url, s).then((res) => {
     return res.json() as Promise<T>
   })
 }
