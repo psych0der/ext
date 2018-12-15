@@ -1,4 +1,3 @@
-import { queue } from 'async'
 import { InboxSDKInstance } from "inboxsdk"
 import settings from "../settings"
 // @ts-ignore
@@ -8,6 +7,10 @@ import { requestHeaders, Base64EncodeUrl, addClass, createElement, addCss, waitF
 import mailMerge from "./components/mail-merge";
 import { defaultTokens, defaultTokenData, replaceTokens } from "./components/tokens"
 import { ICheckAuthResponse } from '../components/messages';
+import { sendCampaign, ICampaignResult } from './components/email';
+import { createCampaign, getUnsubEmails, updateCampaign, getCampaignReport } from "./components/server";
+import { createCampaign as dbCreateCampaign, getCampaignFromReport } from './components/db'
+import { createReportEmail, createReportHTML } from "./components/reports";
 require('tributejs/dist/tribute.css')
 require('../../css/style.scss')
 
@@ -37,7 +40,18 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
         const modal = ixSdk.Widgets.showModalView({
           el: testEmailContent(sdk.User.getEmailAddress(), (emailAddress) => {
             modal.close()
-            sendEmails(googleToken, composeView, sdk.User.getEmailAddress(), emailAddress)
+            sendCampaign({
+              campaignId: 'test',
+              composeView,
+              googleToken,
+              unSubEmails: [],
+              inboxSDK: ixSdk,
+              testEmail: emailAddress,
+              unSubLink: `${settings.host}/unsubscribe/test`,
+              userEmail: sdk.User.getEmailAddress()
+            }, () => {
+              //
+            })
           }),
           title: 'Send Test Email'
         })
@@ -49,20 +63,38 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
       type: 'SEND_ACTION',
       onClick: async () => {
         try {
-          const newCampaign = await fetch(`${settings.host}/campaign`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ userId })
-          }).then((res) => {
-            return res.json()
+          const newCampaign = await createCampaign(userId)
+          const unSubEmails = await getUnsubEmails(userId)
+          console.log(newCampaign, unSubEmails)
+          sendCampaign({
+            campaignId: newCampaign.campaignId,
+            composeView,
+            googleToken,
+            inboxSDK: ixSdk,
+            userEmail: sdk.User.getEmailAddress(),
+            unSubEmails: unSubEmails.emails,
+            unSubLink: newCampaign.unsubLink
+          }, async (err, campaignRes: ICampaignResult) => {
+            if (err) {
+              return console.log(err)
+            }
+            const report = await createReportEmail(googleToken, campaignRes.reportTitle)
+            await dbCreateCampaign({
+              id: newCampaign.campaignId,
+              reportMessageId: report.id,
+              sentMessageIds: campaignRes.successMessageIds
+            })
+            const updateRes = await updateCampaign({
+              campaignId: newCampaign.campaignId,
+              userId,
+              sentMessageIds: campaignRes.successMessageIds,
+              failedMessages: campaignRes.failedEmails,
+              sentMessages: campaignRes.successEmails
+            })
           })
-          console.log(newCampaign)
         } catch (e) {
           console.log(e)
         }
-        // sendEmails(googleToken, composeView, sdk.User.getEmailAddress())
       }
     })
     document.querySelectorAll('.gmassclone-send, .gmassclone-send-test').forEach((el) => {
