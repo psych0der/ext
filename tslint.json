@@ -9,7 +9,8 @@
         "trailing-comma": false,
         "semicolon": false,
         "no-console": false,
-        "ordered-imports": false
+        "ordered-imports": false,
+        "no-reference": false
     },
     "rulesDirectory": []
 }

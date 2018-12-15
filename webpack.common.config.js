@@ -11,7 +11,8 @@ module.exports = {
     },
 
     resolve: {
-        extensions: [".ts", ".tsx", ".js", ".json"]
+        extensions: [".ts", ".tsx", ".js", ".json"],
+        mainFields: ["main", "module"]
     },
 
     module: {
