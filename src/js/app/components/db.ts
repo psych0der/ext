@@ -1,6 +1,7 @@
-import * as PouchDB from 'pouchdb'
+import PouchDB = require('pouchdb')
+import find = require('pouchdb-find')
 
-PouchDB.plugin(require('pouchdb-find'))
+PouchDB.plugin(find)
 
 interface IBaseCampaign {
   reportMessageId: string,
@@ -46,6 +47,7 @@ export function createCampaign(newCampaign: ICampaignOpts) {
     _id: getCampaignDocId(newCampaign.id),
     campaignId: newCampaign.id
   })
+  console.log(DB)
   return DB.put(newDoc)
 }
 
@@ -60,5 +62,5 @@ export function getCampaignFromReport(reportMessageId: string) {
     selector: {
       reportMessageId
     }
-  })
+  }) as Promise<PouchDB.Find.FindResponse<{campaignId: string}>>
 }
