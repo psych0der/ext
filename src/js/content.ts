@@ -4,7 +4,7 @@ import { ICheckAuth, Type, IGmailSignIn, ICheckAuthResponse, IClearToken } from 
 import settings from './settings'
 import app from './app/app'
 import { requestHeaders } from "./app/components/utils";
-import { open } from "./app/components/db";
+import { open, destroy } from "./app/components/db";
 
 // @ts-ignore
 InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {

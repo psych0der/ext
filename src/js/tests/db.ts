@@ -14,19 +14,19 @@ describe('database tests', () => {
     const d = {
       id: '4564',
       reportMessageId: 'report1',
-      sentMessageIds: ['34534', '6666']
+      sentThreadIds: ['34534', '6666']
     }
     const res = await createCampaign(d)
     const g = await getCampaign(d.id)
     expect(g.campaignId).to.eql(d.id)
-    expect(g.sentMessageIds).to.deep.equal(g.sentMessageIds)
+    expect(g.sentThreadIds).to.deep.equal(g.sentThreadIds)
   })
 
   it('gets new campaign from reportMessageId', async () => {
     const d = {
       id: '123',
       reportMessageId: 'report3',
-      sentMessageIds: ['34534', '6666']
+      sentThreadIds: ['34534', '6666']
     }
     const res = await createCampaign(d)
     const f = await getCampaignFromReport(d.reportMessageId)

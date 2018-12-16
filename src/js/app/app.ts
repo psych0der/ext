@@ -107,14 +107,14 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
             await dbCreateCampaign({
               id: newCampaign.campaignId,
               reportMessageId: report.id,
-              sentMessageIds: campaignRes.successMessageIds
+              sentThreadIds: campaignRes.sentThreadIds
             })
             const updateRes = await updateCampaign({
               campaignId: newCampaign.campaignId,
               userId,
-              sentMessageIds: campaignRes.successMessageIds,
+              sentThreadIds: campaignRes.sentThreadIds,
               failedMessages: campaignRes.failedEmails,
-              sentMessages: campaignRes.successEmails
+              sentMessages: campaignRes.sentEmails
             })
           })
         } catch (e) {

@@ -16,8 +16,8 @@ interface ISendCampaignOptions {
 }
 
 export interface ICampaignResult {
-  successEmails: string[],
-  successMessageIds: string[],
+  sentEmails: string[],
+  sentThreadIds: string[],
   failedEmails: string[],
   reportTitle: string
 }
@@ -40,8 +40,8 @@ export async function sendCampaign(opts: ISendCampaignOptions, onComplete: (err:
   const campaignResult: ICampaignResult = {
     failedEmails: [],
     reportTitle: subject,
-    successEmails: [],
-    successMessageIds: [],
+    sentEmails: [],
+    sentThreadIds: [],
   }
   q.drain = () => {
     // @ts-ignore
@@ -98,8 +98,8 @@ export async function sendCampaign(opts: ISendCampaignOptions, onComplete: (err:
         errors.push(err.message)
         campaignResult.failedEmails.push(err.email)
       } else {
-        campaignResult.successEmails.push(res.email)
-        campaignResult.successMessageIds.push(res.id)
+        campaignResult.sentEmails.push(res.email)
+        campaignResult.sentThreadIds.push(res.threadId)
       }
       sendCount++
       saveText.innerText = `Sent ${sendCount}/${recepients.length} emails.`

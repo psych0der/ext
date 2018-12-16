@@ -5,7 +5,7 @@ PouchDB.plugin(find)
 
 interface IBaseCampaign {
   reportMessageId: string,
-  sentMessageIds: string[]
+  sentThreadIds: string[]
 }
 
 interface ICampaignOpts extends IBaseCampaign {
@@ -47,7 +47,6 @@ export function createCampaign(newCampaign: ICampaignOpts) {
     _id: getCampaignDocId(newCampaign.id),
     campaignId: newCampaign.id
   })
-  console.log(DB)
   return DB.put(newDoc)
 }
 

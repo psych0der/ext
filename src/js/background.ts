@@ -3,6 +3,7 @@ import { isFirstTimeUser } from './components/storage'
 import * as notifs from './components/notifications'
 import * as messages from './components/messages'
 import { requestHeaders } from './app/components/utils'
+import { open } from './app/components/db';
 
 chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResponse) => {
   if (message.type === messages.Type.CHECK_AUTH) {
