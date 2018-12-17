@@ -25,6 +25,10 @@ export async function updateHistoryId(opts: AppRequest.IUpdateHistoryId) {
   return request(`${settings.host}/historyId`, 'POST', opts)
 }
 
+export async function getAllCampaigns(opts: AppRequest.IAuth) {
+  return request<AppResponse.ICampaignList>(`${settings.host}/campaigns?userId=${opts.userId}`, 'GET', null)
+}
+
 export function request<T>(url: string, method: string, body: any) {
   const s: RequestInit = {
     method,

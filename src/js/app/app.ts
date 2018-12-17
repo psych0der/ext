@@ -8,8 +8,14 @@ import mailMerge from "./components/mail-merge";
 import { defaultTokens, defaultTokenData, replaceTokens } from "./components/tokens"
 import { ICheckAuthResponse } from '../components/messages';
 import { sendCampaign, ICampaignResult } from './components/email';
-import { createCampaign, getUnsubEmails, updateCampaign, getCampaignReport } from "./components/server";
-import { createCampaign as dbCreateCampaign, getCampaignFromReport } from './components/db'
+import {
+  createCampaign,
+  getUnsubEmails,
+  updateCampaign,
+  getCampaignReport,
+  getAllCampaigns as getAllCampaignsServer
+} from "./components/server";
+import { createCampaign as dbCreateCampaign, getCampaignFromReport, getAllCampaigns } from './components/db'
 import { createReportEmail, createReportHTML, updateCampaigns } from "./components/reports";
 require('tributejs/dist/tribute.css')
 require('../../css/style.scss')
@@ -22,6 +28,25 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
   ixSdk = sdk
   googleToken = auth.token
   userId = auth.userId
+  // make sure local campaigns are synced
+  getAllCampaignsServer({
+    userId
+  }).then(async (res) => {
+    console.log(res)
+    const currentCampaigns = await getAllCampaigns()
+    const currentCampaignIds = currentCampaigns.map((c) => c.campaignId)
+    res.campaigns.forEach(async (camp) => {
+      if (currentCampaignIds.indexOf(camp.id) === -1) {
+        await dbCreateCampaign({
+          id: camp.id,
+          sentThreadIds: camp.sentThreadIds,
+          reportMessageId: camp.reportMessageId
+        })
+      }
+    })
+  }).catch((err) => {
+    console.log(err)
+  })
   // update current campaigns, check historyId
   updateCampaigns(userId, googleToken)
   // update every 2 minutes
@@ -116,6 +141,7 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
             const updateRes = await updateCampaign({
               campaignId: newCampaign.campaignId,
               userId,
+              reportMessageId: report.id,
               sentThreadIds: campaignRes.sentThreadIds,
               failedMessages: campaignRes.failedEmails,
               sentMessages: campaignRes.sentEmails
