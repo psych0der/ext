@@ -24,6 +24,10 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
   userId = auth.userId
   // update current campaigns, check historyId
   updateCampaigns(userId, googleToken)
+  // update every 2 minutes
+  setInterval(() => {
+    updateCampaigns(userId, googleToken)
+  }, 120000)
   // add tribute css
   waitForElement('#aso_search_form_anchor', (el) => {
     if (el) {
