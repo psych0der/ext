@@ -14,7 +14,7 @@ export async function createReportEmail(googleToken: string, reportTitle: string
   })
   const body = {
     raw: message,
-    labelIds: ["INBOX", "UNREAD"]
+    labelIds: [settings.labels.reports.id, "UNREAD"]
   }
   return await fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/import?key=${settings.googleApiKey}`, {
     method: 'POST',
@@ -153,4 +153,54 @@ export function createReportHTML(opts: ICreateReportHTML) {
     </table>
   `
   return div
+}
+
+interface ILabelListRes {
+  labels: Array<{
+    id: string,
+    name: string
+  }>
+}
+
+export async function getMissingLabels(labels: ILabels, googleToken: string) {
+  const missing: Array<keyof ILabels> = []
+  const url = `https://www.googleapis.com/gmail/v1/users/me/labels?key=${settings.googleApiKey}`
+  const labelKeys = Object.keys(labels)
+  const res = await fetch(url, {
+    headers: requestHeaders(googleToken)
+  }).then((r) => {
+    return r.json() as Promise<ILabelListRes>
+  })
+  console.log(res)
+  labelKeys.forEach((key) => {
+    let found = false
+    for (const resLabel of res.labels) {
+      if (resLabel.name === labels[key].name) {
+        labels[key].id = resLabel.id
+        console.log(labels[key])
+        found = true
+        break
+      }
+    }
+    if (!found) {
+      missing.push(key)
+    }
+  })
+  console.log(labels)
+  return missing
+}
+
+export async function createLabel(label: ILabel, googleToken: string) {
+  const url = `https://www.googleapis.com/gmail/v1/users/me/labels?key=${settings.googleApiKey}`
+  return await fetch(url, {
+    headers: requestHeaders(googleToken),
+    body: JSON.stringify({
+      name: label.name,
+      labelListVisibility: 'labelShow',
+      messageListVisibility: 'show'
+    }),
+    method: 'POST'
+  }).then((r) => {
+    return r.json()
+  })
 }

@@ -16,7 +16,7 @@ import {
   getAllCampaigns as getAllCampaignsServer
 } from "./components/server";
 import { createCampaign as dbCreateCampaign, getCampaignFromReport, getAllCampaigns } from './components/db'
-import { createReportEmail, createReportHTML, updateCampaigns } from "./components/reports";
+import { createReportEmail, createReportHTML, updateCampaigns, getMissingLabels, createLabel } from "./components/reports";
 require('tributejs/dist/tribute.css')
 require('../../css/style.scss')
 
@@ -28,6 +28,17 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
   ixSdk = sdk
   googleToken = auth.token
   userId = auth.userId
+  // check if labels have been created
+  getMissingLabels(settings.labels, googleToken).then((missingLabelKeys) => {
+    console.log(missingLabelKeys)
+    console.log(settings.labels)
+    missingLabelKeys.forEach(async (key) => {
+      const r = await createLabel(settings.labels[key], googleToken)
+      settings.labels[key].id = r.id
+    })
+  }).catch((err) => {
+    console.log(err)
+  })
   // make sure local campaigns are synced
   getAllCampaignsServer({
     userId
