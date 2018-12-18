@@ -29,6 +29,10 @@ export async function getAllCampaigns(opts: AppRequest.IAuth) {
   return request<AppResponse.ICampaignList>(`${settings.host}/campaigns?userId=${opts.userId}`, 'GET', null)
 }
 
+export async function getUserInfo(opts: AppRequest.IAuth) {
+  return request<AppResponse.IUserInfo>(`${settings.host}/user/${opts.userId}`, 'GET', null)
+}
+
 export function request<T>(url: string, method: string, body: any) {
   const s: RequestInit = {
     method,

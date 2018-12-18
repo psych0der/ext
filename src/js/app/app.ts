@@ -13,7 +13,8 @@ import {
   getUnsubEmails,
   updateCampaign,
   getCampaignReport,
-  getAllCampaigns as getAllCampaignsServer
+  getAllCampaigns as getAllCampaignsServer,
+  getUserInfo
 } from "./components/server";
 import { createCampaign as dbCreateCampaign, getCampaignFromReport, getAllCampaigns } from './components/db'
 import { createReportEmail, createReportHTML, updateCampaigns, getMissingLabels, createLabel } from "./components/reports";
@@ -128,16 +129,16 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
       type: 'SEND_ACTION',
       onClick: async () => {
         try {
+          const userInfo = await getUserInfo({ userId })
           const newCampaign = await createCampaign({ userId })
-          const unSubEmails = await getUnsubEmails({ userId })
-          console.log(newCampaign, unSubEmails)
+          console.log(newCampaign, userInfo)
           sendCampaign({
             campaignId: newCampaign.campaignId,
             composeView,
             googleToken,
             inboxSDK: ixSdk,
             userEmail: sdk.User.getEmailAddress(),
-            unSubEmails: unSubEmails.emails,
+            unSubEmails: userInfo.emails,
             unSubLink: newCampaign.unsubLink
           }, async (err, campaignRes: ICampaignResult) => {
             if (err) {
