@@ -8,5 +8,9 @@ export default {
       id: null,
       name: 'GMC Reports'
     }
-  } as ILabels
+  } as ILabels,
+  auth0: {
+    clientId: '77WK3118K3E7Lzb37ZYnV2DZgLwsb1SW',
+    domain: 'mrlb.auth0.com'
+  }
 }

@@ -4,6 +4,9 @@ import * as notifs from './components/notifications'
 import * as messages from './components/messages'
 import { requestHeaders } from './app/components/utils'
 import { open } from './app/components/db';
+import settings from './settings';
+import { isLoggedIn, getJwtToken, getAuthResult } from './components/auth0';
+const Auth0 = require('auth0-chrome')
 
 chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResponse) => {
   if (message.type === messages.Type.CHECK_AUTH) {
@@ -42,6 +45,31 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
     }).catch((e) => {
       console.log(e)
     })
+  } else if (message.type === messages.Type.AUTH0_SIGN_IN) {
+    // check if existing token is valid
+    const token = getJwtToken()
+    if (token && isLoggedIn(token)) {
+      sendResponse(getAuthResult())
+    } else {
+      const a = new Auth0(settings.auth0.domain, settings.auth0.clientId).authenticate({
+        device: 'chrome-extension',
+        scope: 'openid offline_access'
+      }).then((authResult: any) => {
+        localStorage.setItem('authResult', JSON.stringify(authResult))
+        sendResponse(authResult)
+      }).catch((e: any) => {
+        console.log(e)
+        // display notification
+      })
+    }
+  } else if (message.type === messages.Type.AUTH0_LOGGED_IN) {
+    const authResult = getAuthResult()
+    console.log(authResult)
+    if (authResult && isLoggedIn(authResult.id_token)) {
+      sendResponse(authResult)
+    } else {
+      sendResponse(null)
+    }
   }
   return true
 })
