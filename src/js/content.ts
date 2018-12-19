@@ -1,10 +1,36 @@
 import { auth, getToken } from "./components/auth"
 import * as notifs from "./components/notifications"
-import { ICheckAuth, Type, IGmailSignIn, ICheckAuthResponse, IClearToken } from "./components/messages"
+import { ICheckAuth, Type, IGmailSignIn, ICheckAuthResponse, IClearToken, } from "./components/messages"
 import settings from './settings'
 import app from './app/app'
 import { requestHeaders } from "./app/components/utils";
-import { open, destroy } from "./app/components/db";
+import { open, destroy } from "./app/components/db"
+import { checkSubscription } from "./app/components/server";
+
+const auth0: IAuth0 = {
+  activeSubscription: false,
+  auth0Token: '',
+  isLoggedIn: false
+}
+
+chrome.runtime.sendMessage({
+  type: Type.AUTH0_LOGGED_IN
+}, async (res: any) => {
+  console.log(res)
+  if (res) {
+    auth0.isLoggedIn = true
+    auth0.auth0Token = res.token
+  }
+  try {
+    const r = await checkSubscription({
+      accessToken: res.access_token
+    })
+    console.log(r)
+    auth0.activeSubscription = r.active
+  } catch (e) {
+    console.log(e)
+  }
+})
 
 // @ts-ignore
 InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
@@ -36,4 +62,4 @@ InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
       }
     }
   })
-});
+})

@@ -33,6 +33,10 @@ export async function getUserInfo(opts: AppRequest.IAuth) {
   return request<AppResponse.IUserInfo>(`${settings.host}/user/${opts.userId}`, 'GET', null)
 }
 
+export async function checkSubscription(opts: AppRequest.ICheckSubscription) {
+  return request<AppResponse.ICheckSubscription>(`${settings.host}/subscription/valid`, 'POST', opts)
+}
+
 export function request<T>(url: string, method: string, body: any) {
   const s: RequestInit = {
     method,
@@ -44,6 +48,9 @@ export function request<T>(url: string, method: string, body: any) {
     s.body = JSON.stringify(body)
   }
   return fetch(url, s).then((res) => {
+    if (res.status !== 200) {
+      throw res
+    }
     return res.json() as Promise<T>
   })
 }

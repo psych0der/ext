@@ -25,10 +25,10 @@ let ixSdk: InboxSDKInstance
 let userId: string
 let googleToken: string
 
-export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
+export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse, auth: IAuth0) {
   ixSdk = sdk
-  googleToken = auth.token
-  userId = auth.userId
+  googleToken = gmailAuth.token
+  userId = gmailAuth.userId
   // check if labels have been created
   getMissingLabels(settings.labels, googleToken).then((missingLabelKeys) => {
     console.log(missingLabelKeys)
