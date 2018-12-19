@@ -115,10 +115,6 @@ export async function sendCampaign(opts: ISendCampaignOptions, onComplete: (err:
   if (recepients.length === skipCount) {
     q.drain()
   }
-  // close the compose email
-  if (!opts.testEmail) {
-    opts.composeView.close()
-  }
 }
 
 interface ISendEmailOptions {

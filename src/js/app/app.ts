@@ -65,7 +65,8 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
   setInterval(() => {
     updateCampaigns(userId, googleToken)
   }, 120000)
-  // add tribute css
+
+  // add merge button next to search bar
   waitForElement('#aso_search_form_anchor', (el) => {
     if (el) {
       mailMerge(sdk, googleToken)
@@ -73,6 +74,7 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
       window.location.reload()
     }
   })
+
   // on message view - for loading reports
   sdk.Conversations.registerMessageViewHandler(async (messageView) => {
     try {
@@ -130,37 +132,51 @@ export default function app(sdk: InboxSDKInstance, auth: ICheckAuthResponse) {
       onClick: async () => {
         try {
           const userInfo = await getUserInfo({ userId })
-          const newCampaign = await createCampaign({ userId })
-          console.log(newCampaign, userInfo)
-          sendCampaign({
-            campaignId: newCampaign.campaignId,
-            composeView,
-            googleToken,
-            inboxSDK: ixSdk,
-            userEmail: sdk.User.getEmailAddress(),
-            unSubEmails: userInfo.emails,
-            unSubLink: newCampaign.unsubLink
-          }, async (err, campaignRes: ICampaignResult) => {
-            if (err) {
-              return console.log(err)
-            }
-            const report = await createReportEmail(googleToken, campaignRes.reportTitle)
-            await dbCreateCampaign({
-              id: newCampaign.campaignId,
-              reportMessageId: report.id,
-              sentThreadIds: campaignRes.sentThreadIds
-            })
-            const updateRes = await updateCampaign({
+          const el = emailsRemainingModalEl({
+            userInfo,
+            emailCount: composeView.getToRecipients().length
+          }, async () => {
+            modal.close()
+            composeView.close()
+            const newCampaign = await createCampaign({ userId })
+            sendCampaign({
               campaignId: newCampaign.campaignId,
-              userId,
-              reportMessageId: report.id,
-              sentThreadIds: campaignRes.sentThreadIds,
-              failedMessages: campaignRes.failedEmails,
-              sentMessages: campaignRes.sentEmails
+              composeView,
+              googleToken,
+              inboxSDK: ixSdk,
+              userEmail: sdk.User.getEmailAddress(),
+              unSubEmails: userInfo.emails,
+              unSubLink: newCampaign.unsubLink
+            }, async (err, campaignRes: ICampaignResult) => {
+              if (err) {
+                return console.log(err)
+              }
+              try {
+                const report = await createReportEmail(googleToken, campaignRes.reportTitle)
+                await dbCreateCampaign({
+                  id: newCampaign.campaignId,
+                  reportMessageId: report.id,
+                  sentThreadIds: campaignRes.sentThreadIds
+                })
+                const updateRes = await updateCampaign({
+                  campaignId: newCampaign.campaignId,
+                  userId,
+                  reportMessageId: report.id,
+                  sentThreadIds: campaignRes.sentThreadIds,
+                  failedMessages: campaignRes.failedEmails,
+                  sentMessages: campaignRes.sentEmails
+                })
+              } catch (e) {
+                console.log('Campaign update failed.', e)
+              }
             })
           })
+          const modal = ixSdk.Widgets.showModalView({
+            el,
+            title: 'Your Account...'
+          })
         } catch (e) {
-          console.log(e)
+          console.log('Campaign creation failed.', e)
         }
       }
     })
@@ -212,4 +228,34 @@ function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
   t.attach(composeView.getBodyElement().closest('.inboxsdk__compose').querySelector('input[name="subjectbox"]'))
   // message content
   t.attach(composeView.getBodyElement())
+}
+
+interface IEmailsRemainingOpts {
+  userInfo: AppResponse.IUserInfo,
+  emailCount: number
+}
+
+function emailsRemainingModalEl(opts: IEmailsRemainingOpts, onSend: () => void) {
+  const div = document.createElement('div')
+  const sent = opts.userInfo.emailsSentToday
+  const limit = opts.userInfo.limits.free
+  const remaining = opts.userInfo.limits.free - sent
+
+  if (remaining <= 0) {
+    div.innerHTML = `
+      <p>Limit reached! You have hit the limit of <b>${limit}</b> emails per day, please wait until tomorrow to send more.</p>
+    `
+  } else {
+    const cantBeSent = opts.emailCount - remaining
+    const cantBeSentMsg = `<p>Only <b>${remaining}</b> emails from a total of <b>${opts.emailCount}</b> will be sent from this campaign.</p>`
+    const usageMsg = `<p>This campaign will send <b>${opts.emailCount}</b> emails.</p>`
+    div.innerHTML = `
+      <p>You have sent <b>${sent}</b> emails today with <b>${remaining}</b> remaining.</p>
+      ${opts.emailCount > remaining ? cantBeSentMsg : usageMsg}
+      <div id="send-btn" class="gmassclone-btn inboxsdk__compose_sendButton">Send campaign</div>
+    `
+    const button = div.querySelector('#send-btn')
+    button.addEventListener('click', onSend)
+  }
+  return div
 }
