@@ -1,6 +1,6 @@
 import { auth, getToken } from "./components/auth"
 import * as notifs from "./components/notifications"
-import { ICheckAuth, Type, IGmailSignIn, ICheckAuthResponse, IClearToken, } from "./components/messages"
+import { ICheckAuth, Type, IGmailSignIn, ICheckAuthResponse, IClearToken, ITypes, } from "./components/messages"
 import settings from './settings'
 import app from './app/app'
 import { requestHeaders } from "./app/components/utils";
@@ -13,22 +13,38 @@ const auth0: IAuth0 = {
   isLoggedIn: false
 }
 
+chrome.runtime.onMessage.addListener(async (message: ITypes, sender, sendResponse) => {
+  if (message.type === Type.AUTH0_LOGGED_IN) {
+    auth0.isLoggedIn = true
+    auth0.auth0Token = message.profile.access_token
+    try {
+      const r = await checkSubscription({
+        accessToken: message.profile.access_token
+      })
+      console.log(r)
+      auth0.activeSubscription = r.active
+    } catch (e) {
+      console.log(e)
+    }
+  }
+})
+
 chrome.runtime.sendMessage({
-  type: Type.AUTH0_LOGGED_IN
+  type: Type.AUTH0_GET_PROFILE
 }, async (res: any) => {
   console.log(res)
   if (res) {
     auth0.isLoggedIn = true
-    auth0.auth0Token = res.token
-  }
-  try {
-    const r = await checkSubscription({
-      accessToken: res.access_token
-    })
-    console.log(r)
-    auth0.activeSubscription = r.active
-  } catch (e) {
-    console.log(e)
+    auth0.auth0Token = res.access_token
+    try {
+      const r = await checkSubscription({
+        accessToken: res.access_token
+      })
+      console.log(r)
+      auth0.activeSubscription = r.active
+    } catch (e) {
+      console.log(e)
+    }
   }
 })
 
@@ -58,7 +74,7 @@ InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
         }
         chrome.runtime.sendMessage(msg)
       } else {
-        app(sdk, res)
+        app(sdk, res, auth0)
       }
     }
   })
