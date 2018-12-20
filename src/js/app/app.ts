@@ -133,8 +133,9 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
         try {
           const userInfo = await getUserInfo({ userId })
           const el = emailsRemainingModalEl({
-            userInfo,
-            emailCount: composeView.getToRecipients().length
+            auth,
+            emailCount: composeView.getToRecipients().length,
+            userInfo
           }, async () => {
             modal.close()
             composeView.close()
@@ -170,6 +171,8 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
                 console.log('Campaign update failed.', e)
               }
             })
+          }, () => {
+            return modal.destroyed
           })
           const modal = ixSdk.Widgets.showModalView({
             el,
@@ -232,30 +235,74 @@ function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
 
 interface IEmailsRemainingOpts {
   userInfo: AppResponse.IUserInfo,
-  emailCount: number
+  emailCount: number,
+  auth: IAuth0
 }
 
-function emailsRemainingModalEl(opts: IEmailsRemainingOpts, onSend: () => void) {
+function emailsRemainingModalEl(
+  opts: IEmailsRemainingOpts,
+  onSend: () => void,
+  isModalDestroyed: () => boolean
+) {
+  const { auth, userInfo } = opts
   const div = document.createElement('div')
-  const sent = opts.userInfo.emailsSentToday
-  const limit = opts.userInfo.limits.free
-  const remaining = opts.userInfo.limits.free - sent
+  const initAuth = Object.assign({}, auth)
 
-  if (remaining <= 0) {
-    div.innerHTML = `
-      <p>Limit reached! You have hit the limit of <b>${limit}</b> emails per day, please wait until tomorrow to send more.</p>
-    `
-  } else {
-    const cantBeSent = opts.emailCount - remaining
-    const cantBeSentMsg = `<p>Only <b>${remaining}</b> emails from a total of <b>${opts.emailCount}</b> will be sent from this campaign.</p>`
-    const usageMsg = `<p>This campaign will send <b>${opts.emailCount}</b> emails.</p>`
-    div.innerHTML = `
-      <p>You have sent <b>${sent}</b> emails today with <b>${remaining}</b> remaining.</p>
-      ${opts.emailCount > remaining ? cantBeSentMsg : usageMsg}
-      <div id="send-btn" class="gmassclone-btn inboxsdk__compose_sendButton">Send campaign</div>
-    `
-    const button = div.querySelector('#send-btn')
-    button.addEventListener('click', onSend)
+  function create() {
+    const fc = div.firstChild
+    if (fc !== null) {
+      fc.remove()
+    }
+    const d = document.createElement('div')
+    const sent = userInfo.emailsSentToday
+    // set the limits for free/paid users
+    const limit = auth.isLoggedIn && auth.activeSubscription ? userInfo.limits.paid : userInfo.limits.free
+    const planType = auth.isLoggedIn && auth.activeSubscription ? 'Premium' : 'Free'
+    const remaining = limit - sent
+
+    if (remaining <= 0) {
+      d.innerHTML = `
+        <p>Limit reached! You have hit the limit of <b>${limit}</b> emails per day, please wait until tomorrow to send more.</p>
+        <p>You can increase your daily send limit by signing up for our <a href="#">premium plan.</a></p>
+      `
+      return
+    } else {
+      const cantBeSent = opts.emailCount - remaining
+      const cantBeSentMsg = `<p>Only <b>${remaining}</b> emails from a total of <b>${opts.emailCount}</b> will be sent from this campaign.</p>`
+      const usageMsg = `<p>This campaign will send <b>${opts.emailCount}</b> emails.</p>`
+      d.innerHTML = `
+        <p>You have sent <b>${sent}</b> emails today with <b>${remaining}</b> remaining.</p>
+        ${opts.emailCount > remaining ? cantBeSentMsg : usageMsg}
+      `
+    }
+    if (!auth.isLoggedIn) {
+      d.innerHTML += `
+        <p>You are not logged in. If you are a subscriber, please log into your account by clicking the extension icon.</p>
+      `
+    } else if (!auth.activeSubscription) {
+      d.innerHTML += `
+        <p>You are logged in but don't have an active subscription! <a href="#">Click here to resubscribe.</a></p>
+      `
+    }
+    // add send campaign button
+    if (remaining > 0) {
+      d.innerHTML += `<div id="send-btn" class="gmassclone-btn inboxsdk__compose_sendButton">Send campaign</div>`
+      const button = d.querySelector('#send-btn')
+      button.addEventListener('click', onSend)
+    }
+    div.appendChild(d)
   }
+
+  const int = setInterval(() => {
+    if (isModalDestroyed()) {
+      clearInterval(int)
+    }
+    if (initAuth.activeSubscription !== auth.activeSubscription || initAuth.isLoggedIn !== initAuth.isLoggedIn) {
+      create()
+      clearInterval(int)
+    }
+  }, 500)
+
+  create()
   return div
 }
