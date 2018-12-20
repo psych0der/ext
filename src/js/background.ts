@@ -53,16 +53,23 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
     } else {
       const a = new Auth0(settings.auth0.domain, settings.auth0.clientId).authenticate({
         device: 'chrome-extension',
-        scope: 'openid offline_access'
+        scope: 'openid offline_access email'
       }).then((authResult: any) => {
         localStorage.setItem('authResult', JSON.stringify(authResult))
+        chrome.tabs.query({ active: true }, (tab) => {
+          const m: messages.IAuth0LoggedIn = {
+            type: messages.Type.AUTH0_LOGGED_IN,
+            profile: authResult
+          }
+          chrome.tabs.sendMessage(tab[0].id, m)
+        })
         sendResponse(authResult)
       }).catch((e: any) => {
         console.log(e)
         // display notification
       })
     }
-  } else if (message.type === messages.Type.AUTH0_LOGGED_IN) {
+  } else if (message.type === messages.Type.AUTH0_GET_PROFILE) {
     const authResult = getAuthResult()
     console.log(authResult)
     if (authResult && isLoggedIn(authResult.id_token)) {

@@ -1,5 +1,5 @@
 export type ITypes = ICheckAuth | IGmailSignIn | IClearToken | IAuth0SignIn |
-  IAuth0LoggedIn | IAuth0SignOut
+  IAuth0GetProfile | IAuth0SignOut | IAuth0LoggedIn
 
 export enum Type {
   CHECK_AUTH, // for gmail API
@@ -7,6 +7,7 @@ export enum Type {
   CLEAR_TOKEN, // clears gmail token
   AUTH0_SIGN_IN,
   AUTH0_SIGN_OUT,
+  AUTH0_GET_PROFILE,
   AUTH0_LOGGED_IN
 }
 
@@ -33,10 +34,15 @@ export interface IAuth0SignIn {
   type: Type.AUTH0_SIGN_IN
 }
 
-export interface IAuth0LoggedIn {
-  type: Type.AUTH0_LOGGED_IN
+export interface IAuth0GetProfile {
+  type: Type.AUTH0_GET_PROFILE
 }
 
 export interface IAuth0SignOut {
   type: Type.AUTH0_SIGN_OUT
+}
+
+export interface IAuth0LoggedIn {
+  type: Type.AUTH0_LOGGED_IN,
+  profile: any
 }
