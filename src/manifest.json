@@ -15,7 +15,8 @@
     ]
   },
   "browser_action": {
-    "default_icon": "icons/icon.png"
+    "default_icon": "icons/icon.png",
+    "default_popup": "html/popup.html"
   },
   "permissions": [
     "identity.email",

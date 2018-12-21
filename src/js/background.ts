@@ -77,6 +77,9 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
     } else {
       sendResponse(null)
     }
+  } else if (message.type === messages.Type.AUTH0_SIGN_OUT) {
+    localStorage.clear()
+    sendResponse(true)
   }
   return true
 })

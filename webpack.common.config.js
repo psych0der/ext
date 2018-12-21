@@ -3,7 +3,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 module.exports = {
     entry: {
         background: "./src/js/background.ts",
-        content: "./src/js/content.ts"
+        content: "./src/js/content.ts",
+        popup: "./src/js/popup.ts"
     },
     output: {
         filename: "[name].js",
@@ -37,6 +38,7 @@ module.exports = {
     plugins: [
         new CopyWebpackPlugin([
             { from: 'src/icons', to: '../icons' },
+            { from: 'src/includes', to: '../' },
             { from: 'src/js/includes', to: '../js' },
             { from: 'src/html', to: '../html' },
             { from: 'src/manifest.json', to: '../' }
