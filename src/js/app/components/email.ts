@@ -12,8 +12,11 @@ interface ISendCampaignOptions {
   testEmail?: string,
   campaignId: string,
   unSubLink: string,
-  unSubEmails: string[]
+  unSubEmails: string[],
+  userType: TUserType
 }
+
+type TUserType = 'paid' | 'free'
 
 export interface ICampaignResult {
   sentEmails: string[],
@@ -92,7 +95,8 @@ export async function sendCampaign(opts: ISendCampaignOptions, onComplete: (err:
       subject: sbjct,
       userEmail: opts.userEmail,
       unSubLink: `${opts.unSubLink}${rec.emailAddress}`,
-      imgLink: `${settings.host}/campaign/open?campaignId=${opts.campaignId}&email=${rec.emailAddress}`
+      imgLink: `${settings.host}/campaign/open?campaignId=${opts.campaignId}&email=${rec.emailAddress}`,
+      userType: opts.userType
     }, (err: any, res: any) => {
       if (err) {
         errors.push(err.message)
@@ -123,6 +127,7 @@ interface ISendEmailOptions {
   recepient: string,
   userEmail: string,
   googleToken: string,
+  userType: TUserType,
   unSubLink?: string,
   imgLink?: string
 }
@@ -134,7 +139,8 @@ export function sendEmail(options: ISendEmailOptions, cb: (err: null | any, res?
     recepient: options.recepient,
     subject: options.subject,
     unSubLink: options.unSubLink,
-    imgLink: options.imgLink
+    imgLink: options.imgLink,
+    adLink: options.userType === 'free' ? true : false
   })
   const body = {
     raw: message
@@ -164,7 +170,8 @@ interface IMessageOptions {
   from: string,
   unSubLink?: string,
   imgLink?: string,
-  recepient?: string
+  recepient?: string,
+  adLink?: boolean
 }
 
 export function createMessage(options: IMessageOptions) {
@@ -178,7 +185,12 @@ export function createMessage(options: IMessageOptions) {
   ]
   if (options.unSubLink) {
     messageContents.push(
-      `<div>Don't want to receive any more emails? <a href="${options.unSubLink}">Click here to unsubscribe.</a></div>\r\n`
+      `<div style="margin-top:50px;">Don't want to receive any more emails? <a href="${options.unSubLink}">Click here to unsubscribe.</a></div>\r\n`
+    )
+  }
+  if (options.adLink) {
+    messageContents.push(
+      `<div style="margin-top:10px">This email was sent using <a href="${settings.host}">GMC</a>.</div>\r\n`
     )
   }
   if (options.imgLink) {
