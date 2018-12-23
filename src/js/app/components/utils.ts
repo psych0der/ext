@@ -45,3 +45,15 @@ export function waitForElement(selector: string, cb: (el: Element) => void) {
     }
   }, 50)
 }
+
+export function wait(timeMs: number = 1000) {
+  return new Promise((res, rej) => {
+    try {
+      setTimeout(() => {
+        res()
+      }, timeMs)
+    } catch (e) {
+      rej(e)
+    }
+  })
+}

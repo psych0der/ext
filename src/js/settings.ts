@@ -3,6 +3,7 @@ export default {
   inboxSDK: 'sdk_gmclone_e228e1960f',
   host: 'http://localhost:3000',
   contactEmail: 'mattb.prg@gmail.com',
+  maxEmailSendInterval: 500, // at most one email per this time(ms)
   labels: {
     reports: {
       id: null,

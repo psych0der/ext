@@ -1,7 +1,7 @@
 import settings from '../../settings'
 import { queue } from 'async'
 import { defaultTokens, defaultTokenData, replaceTokens } from "./tokens"
-import { Base64EncodeUrl, requestHeaders } from './utils';
+import { Base64EncodeUrl, requestHeaders, wait } from './utils';
 import { InboxSDKInstance } from 'inboxsdk';
 
 interface ISendCampaignOptions {
@@ -31,6 +31,7 @@ export async function sendCampaign(opts: ISendCampaignOptions, onComplete: (err:
   const message = opts.composeView.getHTMLContent()
   const recepients = opts.composeView.getToRecipients()
   const errors: string[] = []
+  const timer = new TimeRecord()
   const q = queue(sendEmail, 2)
   let skipCount = 0
   let sendCount = 0
@@ -54,8 +55,8 @@ export async function sendCampaign(opts: ISendCampaignOptions, onComplete: (err:
         html: `
         <p>${errors.length} ${errors.length === 1 ? 'error' : 'errors'} occurred.</p>
         ${errors.map((e) => {
-            return `<p>${e}</p>`
-          }).join('\n')}
+          return `<p>${e}</p>`
+        }).join('\n')}
         `,
         persistent: true
       })
@@ -96,7 +97,8 @@ export async function sendCampaign(opts: ISendCampaignOptions, onComplete: (err:
       userEmail: opts.userEmail,
       unSubLink: `${opts.unSubLink}${rec.emailAddress}`,
       imgLink: `${settings.host}/campaign/open?campaignId=${opts.campaignId}&email=${rec.emailAddress}`,
-      userType: opts.userType
+      userType: opts.userType,
+      timer
     }, (err: any, res: any) => {
       if (err) {
         errors.push(err.message)
@@ -128,39 +130,49 @@ interface ISendEmailOptions {
   userEmail: string,
   googleToken: string,
   userType: TUserType,
+  timer: TimeRecord,
   unSubLink?: string,
-  imgLink?: string
+  imgLink?: string,
 }
 
 export function sendEmail(options: ISendEmailOptions, cb: (err: null | any, res?: any) => void) {
-  const message = createMessage({
-    from: options.userEmail,
-    message: options.message,
-    recepient: options.recepient,
-    subject: options.subject,
-    unSubLink: options.unSubLink,
-    imgLink: options.imgLink,
-    adLink: options.userType === 'free' ? true : false
-  })
-  const body = {
-    raw: message
-  }
-  fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/send?key=${settings.googleApiKey}`, {
-    body: JSON.stringify(body),
-    headers: requestHeaders(options.googleToken),
-    method: 'POST'
-  }).then((res) => {
-    return res.json()
-  }).then((res) => {
-    res.email = options.recepient
-    if (res.error) {
-      throw res.error
+  const now = Date.now()
+  const timeDiff = now - options.timer.getLastSentDate()
+  console.log('difference ', timeDiff)
+  wait(timeDiff < settings.maxEmailSendInterval ? (settings.maxEmailSendInterval - timeDiff) : 0).then(() => {
+    const message = createMessage({
+      from: options.userEmail,
+      message: options.message,
+      recepient: options.recepient,
+      subject: options.subject,
+      unSubLink: options.unSubLink,
+      imgLink: options.imgLink,
+      adLink: options.userType === 'free' ? true : false
+    })
+    const body = {
+      raw: message
     }
-    cb(null, res)
-  }).catch((err) => {
-    err.email = options.recepient
-    console.log(err)
-    cb(err)
+    options.timer.setLastSentDate(Date.now())
+    console.log('sending', Date.now())
+    fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/send?key=${settings.googleApiKey}`, {
+      body: JSON.stringify(body),
+      headers: requestHeaders(options.googleToken),
+      method: 'POST'
+    }).then((res) => {
+      return res.json()
+    }).then((res) => {
+      res.email = options.recepient
+      if (res.error) {
+        throw res.error
+      }
+      cb(null, res)
+    }).catch((err) => {
+      err.email = options.recepient
+      console.log(err)
+      cb(err)
+    })
+  }).catch((e) => {
+    cb(e)
   })
 }
 
@@ -200,4 +212,22 @@ export function createMessage(options: IMessageOptions) {
   }
   const message = messageContents.join('')
   return Base64EncodeUrl(btoa(unescape(encodeURIComponent(message))))
+}
+
+/**
+ * Keeps track of the latest email send time.
+ *
+ * @class TimeRecord
+ */
+class TimeRecord {
+  private lastSentTime: number
+  constructor() {
+    this.lastSentTime = 0
+  }
+  public setLastSentDate(timestamp: number) {
+    this.lastSentTime = timestamp
+  }
+  public getLastSentDate() {
+    return this.lastSentTime
+  }
 }
