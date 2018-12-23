@@ -11,7 +11,7 @@ export default {
     }
   } as ILabels,
   auth0: {
-    clientId: '77WK3118K3E7Lzb37ZYnV2DZgLwsb1SW',
-    domain: 'mrlb.auth0.com'
+    clientId: 'pfthfYGxF7eyDpS844ZJ3yce9QbD9lfN',
+    domain: 'sendiateam.auth0.com'
   }
 }
