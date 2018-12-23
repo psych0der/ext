@@ -78,3 +78,21 @@ $bg-color: coral;
   content: 'Test';
   padding-right: 3px;
 }
+
+.gmassclone-report-table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 25%;
+  font-weight: 600;
+}
+
+.gmassclone-report-table td, .gmassclone-report-table th {
+  border: 2px solid #efefef;
+  text-align: left;
+  padding: 8px;
+}
+
+.gmassclone-report-table tr:nth-child(even) {
+  background-color: coral;
+  color: white;
+}

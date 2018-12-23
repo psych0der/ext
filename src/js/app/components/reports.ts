@@ -127,7 +127,7 @@ interface ICreateReportHTML {
 export function createReportHTML(opts: ICreateReportHTML) {
   const div = document.createElement('div')
   div.innerHTML = `
-    <table>
+    <table class="gmassclone-report-table">
       <tbody>
         <tr>
           <td>Sent messages</td>
