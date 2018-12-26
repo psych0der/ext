@@ -26,11 +26,12 @@ export function notAuthorized(onClickSignInBtn: () => void, onCloseNotif?: () =>
       }
     ],
     iconUrl: './icons/icon.png',
-    message: 'First we need access to your Gmail account!',
-    title: 'Sign In To Continue!',
+    message: 'Sendia needs access to your Gmail account to send emails.',
+    requireInteraction: true,
+    title: 'Sign in',
     type: 'basic'
   }, (notifId) => {
-    removeNotifTimeout(notifId)
+    // removeNotifTimeout(notifId)
     onButtonClick(notifId, 0, onClickSignInBtn)
     if (onCloseNotif !== undefined) {
       onClose(notifId, onCloseNotif)
