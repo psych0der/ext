@@ -1,13 +1,14 @@
 export default {
+  extensionName: 'Sendia',
   googleApiKey: 'AIzaSyCC1m58oVvPminiAqiZmKeaRd_yljDk9s0',
   inboxSDK: 'sdk_gmclone_e228e1960f',
-  host: 'http://localhost:3000',
-  contactEmail: 'mattb.prg@gmail.com',
+  host: 'https://sendia.us',
+  contactEmail: 'sendiateam@gmail.com',
   maxEmailSendInterval: 500, // at most one email per this time(ms)
   labels: {
     reports: {
       id: null,
-      name: 'GMC Reports'
+      name: 'Sendia Reports'
     }
   } as ILabels,
   auth0: {

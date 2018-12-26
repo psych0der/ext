@@ -202,7 +202,7 @@ export function createMessage(options: IMessageOptions) {
   }
   if (options.adLink) {
     messageContents.push(
-      `<div style="margin-top:10px">This email was sent using <a href="${settings.host}">GMC</a>.</div>\r\n`
+      `<div style="margin-top:10px">This email was sent using <a href="${settings.host}">Sendia</a>.</div>\r\n`
     )
   }
   if (options.imgLink) {

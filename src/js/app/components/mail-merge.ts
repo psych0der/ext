@@ -36,7 +36,7 @@ function createMergeBtn(onClick: () => void) {
 
   p.style.display = 'flex'
   form.style.flexGrow = '1'
-  div.classList.add('inboxsdk__compose_sendButton', 'gmassclone-btn')
+  div.classList.add('inboxsdk__compose_sendButton', 'sendia-btn')
   div.style.alignSelf = 'center'
   div.setAttribute('aria-label', 'Select a Spreadsheet')
   div.setAttribute('role', 'button')
@@ -89,7 +89,7 @@ function form(files: IFile[], onError: (msg: string) => void, onComposeCreated: 
     const fileId = select.value
     composeFromSheet(fileId, onError, onComposeCreated)
   })
-  addClass(btn, 'gmassclone-btn')
+  addClass(btn, 'sendia-btn')
   addClass(btn, 'inboxsdk__compose_sendButton')
   div.append(select)
   div.append(btn)

@@ -101,7 +101,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
   sdk.Compose.registerComposeViewHandler((composeView) => {
     addAutocomplete(composeView)
     composeView.addButton({
-      iconClass: 'gmassclone-send-test',
+      iconClass: 'sendia-send-test',
       title: 'Send Test',
       type: 'SEND_ACTION',
       onClick() {
@@ -127,7 +127,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
       }
     })
     composeView.addButton({
-      iconClass: 'gmassclone-send',
+      iconClass: 'sendia-send',
       title: 'Send',
       type: 'SEND_ACTION',
       onClick: async () => {
@@ -185,8 +185,8 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
         }
       }
     })
-    document.querySelectorAll('.gmassclone-send, .gmassclone-send-test').forEach((el) => {
-      el.parentElement.classList.add('gmassclone-btn')
+    document.querySelectorAll('.sendia-send, .sendia-send-test').forEach((el) => {
+      el.parentElement.classList.add('sendia-btn')
     })
   })
 }
@@ -200,13 +200,13 @@ function testEmailContent(defaultEmail: string, onClick: (emailAddress: string) 
       <p>If using a spreadsheet, personalization tokens will use values from the first row.</p>
     </div>
     <div style="display:flex; margin-top: 10px">
-      <input style="flex-grow: 1" type="text" class="gmassclone-input" 
+      <input style="flex-grow: 1" type="text" class="sendia-input" 
       placeholder="Email address" value="${defaultEmail}" />
-      <div class="inboxsdk__compose_sendButton gmassclone-btn">Send</div>
+      <div class="inboxsdk__compose_sendButton sendia-btn">Send</div>
     </div>
   `
   const input = div.querySelector('input')
-  const btn = div.querySelector('.gmassclone-btn')
+  const btn = div.querySelector('.sendia-btn')
   btn.addEventListener('click', () => {
     onClick(input.value)
   })
@@ -288,7 +288,7 @@ function emailsRemainingModalEl(
     }
     // add send campaign button
     if (remaining > 0) {
-      d.innerHTML += `<div id="send-btn" class="gmassclone-btn inboxsdk__compose_sendButton">Send campaign</div>`
+      d.innerHTML += `<div id="send-btn" class="sendia-btn inboxsdk__compose_sendButton">Send campaign</div>`
       const button = d.querySelector('#send-btn')
       button.addEventListener('click', onSend)
     }

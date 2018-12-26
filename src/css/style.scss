@@ -1,4 +1,4 @@
-$id: '#gmassclone';
+$id: '#sendia';
 $bg-color: coral;
 
 @mixin font {
@@ -37,7 +37,7 @@ $bg-color: coral;
   }
 }
 
-.gmassclone-input {
+.sendia-input {
   @include font();
   color: #484848;
   background-color: transparent;
@@ -46,21 +46,21 @@ $bg-color: coral;
   flex-grow: 1;
 }
 
-.gmassclone-input:focus {
+.sendia-input:focus {
   outline: none;
 }
 
-.gmassclone-btn {
+.sendia-btn {
   @include font();
   @include item-colour();
   cursor: pointer;
 }
 
-.gmassclone-item {
+.sendia-item {
   @include item-colour();
 }
 
-.gmassclone-send .gmassclone-send-test{
+.sendia-send .sendia-send-test{
   @include font();
   font-weight: 500;
   vertical-align: middle;
@@ -69,30 +69,30 @@ $bg-color: coral;
   
 }
 
-.gmassclone-send::after {
+.sendia-send::after {
   content: 'Send';
   padding-right: 3px;
 }
 
-.gmassclone-send-test::after {
+.sendia-send-test::after {
   content: 'Test';
   padding-right: 3px;
 }
 
-.gmassclone-report-table {
+.sendia-report-table {
   font-family: arial, sans-serif;
   border-collapse: collapse;
   width: 25%;
   font-weight: 600;
 }
 
-.gmassclone-report-table td, .gmassclone-report-table th {
+.sendia-report-table td, .sendia-report-table th {
   border: 2px solid #efefef;
   text-align: left;
   padding: 8px;
 }
 
-.gmassclone-report-table tr:nth-child(even) {
+.sendia-report-table tr:nth-child(even) {
   background-color: coral;
   color: white;
 }

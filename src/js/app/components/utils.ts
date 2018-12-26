@@ -1,6 +1,6 @@
 export function createElement(el: string) {
   const e = document.createElement(el)
-  e.id = 'gmassclone'
+  e.id = 'sendia'
   return e
 }
 

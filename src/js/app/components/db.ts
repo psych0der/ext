@@ -17,7 +17,7 @@ interface ICampaignDoc extends IBaseCampaign {
   campaignId: string
 }
 
-const DB_NAME = 'gmc'
+const DB_NAME = 'sendia'
 const DOC_PREFIX = {
   CAMPAIGN: 'CAMPAIGN_'
 }
