@@ -258,8 +258,7 @@ function emailsRemainingModalEl(
     const d = document.createElement('div')
     const sent = userInfo.emailsSentToday
     // set the limits for free/paid users
-    const limit = auth.isLoggedIn && auth.activeSubscription ? userInfo.limits.paid : userInfo.limits.free
-    const planType = auth.isLoggedIn && auth.activeSubscription ? 'Premium' : 'Free'
+    const limit = auth.activeSubscription ? userInfo.limits.paid : userInfo.limits.free
     const remaining = limit - sent
 
     if (remaining <= 0) {
@@ -277,7 +276,7 @@ function emailsRemainingModalEl(
         ${opts.emailCount > remaining ? cantBeSentMsg : usageMsg}
       `
     }
-    if (!auth.isLoggedIn) {
+    if (!auth.isLoggedIn && !auth.activeSubscription) {
       d.innerHTML += `
         <p>You are not logged in. If you are a subscriber, please log into your account by clicking the extension icon.</p>
       `
@@ -295,6 +294,7 @@ function emailsRemainingModalEl(
     div.appendChild(d)
   }
 
+  // if the auth object is updated rebuild the html
   const int = setInterval(() => {
     if (isModalDestroyed()) {
       clearInterval(int)

@@ -1,9 +1,6 @@
-import { auth, getToken } from "./components/auth"
-import * as notifs from "./components/notifications"
 import { ICheckAuth, Type, IGmailSignIn, ICheckAuthResponse, IClearToken, ITypes, } from "./components/messages"
 import settings from './settings'
 import app from './app/app'
-import { requestHeaders } from "./app/components/utils";
 import { open, destroy } from "./app/components/db"
 import { checkSubscription } from "./app/components/server";
 
@@ -56,7 +53,7 @@ InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
   const m: ICheckAuth = {
     type: Type.CHECK_AUTH
   }
-  chrome.runtime.sendMessage(m, (res: ICheckAuthResponse | null) => {
+  chrome.runtime.sendMessage(m, async (res: ICheckAuthResponse | null) => {
     if (!res) {
       const msg: IGmailSignIn = {
         type: Type.GMAIL_SIGN_IN
@@ -74,6 +71,22 @@ InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
         }
         chrome.runtime.sendMessage(msg)
       } else {
+        // check if this email has an active subscription.
+        // if not, the user will need to login with their auth0 account
+        console.log('checking sub')
+        try {
+          const r = await checkSubscription({
+            accessToken: res.token,
+            isGoogleToken: true
+          })
+          console.log(r)
+          if (r.active) {
+            auth0.activeSubscription = true
+          }
+        } catch (e) {
+          console.log(e)
+        }
+        console.log('running app')
         app(sdk, res, auth0)
       }
     }

@@ -1,8 +1,9 @@
+const useLocalHost = true
 export default {
   extensionName: 'Sendia',
   googleApiKey: 'AIzaSyCC1m58oVvPminiAqiZmKeaRd_yljDk9s0',
   inboxSDK: 'sdk_gmclone_e228e1960f',
-  host: 'https://sendia.us',
+  host: useLocalHost ? 'http://localhost:3000' : 'https://sendia.us',
   contactEmail: 'sendiateam@gmail.com',
   maxEmailSendInterval: 500, // at most one email per this time(ms)
   labels: {
