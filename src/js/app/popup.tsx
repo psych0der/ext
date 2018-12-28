@@ -2,6 +2,7 @@ import * as React from "react"
 import { Grid, Button, Container, Dimmer, Loader } from 'semantic-ui-react'
 import * as messages from '../components/messages'
 import { checkSubscription } from "./components/server";
+import settings from "../settings";
 
 interface IAppProps { }
 interface IAppState {
@@ -68,7 +69,7 @@ export default class Popup extends React.Component<IAppProps, IAppState> {
           </Grid.Row>
           {isLoggedIn && !hasActiveSubscription ?
             <Grid.Row centered>
-              <div>Your subscription is currently not active.<br/> <a href='https://google.com/'>Click here to sign up.</a></div>
+              <div>Your subscription is currently not active.<br /> <a href={settings.homePage} target='_blank'>Click here to sign up.</a></div>
             </Grid.Row> : null
           }
           {isLoggedIn && hasActiveSubscription ?
@@ -83,7 +84,7 @@ export default class Popup extends React.Component<IAppProps, IAppState> {
             </Grid.Row>
           }
           {!isLoggedIn ? <Grid.Row centered>
-            <Button color='orange' icon='clipboard' content='Sign up' />
+            <Button color='orange' icon='clipboard' content='Sign up' as='a' target='_blank' href={settings.homePage} />
           </Grid.Row> : null}
         </Grid>
       </Container>

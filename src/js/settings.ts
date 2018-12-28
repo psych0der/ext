@@ -4,6 +4,7 @@ export default {
   googleApiKey: 'AIzaSyCC1m58oVvPminiAqiZmKeaRd_yljDk9s0',
   inboxSDK: 'sdk_gmclone_e228e1960f',
   host: useLocalHost ? 'http://localhost:3000' : 'https://sendia.us',
+  homePage: 'http://sendia.co',
   contactEmail: 'sendiateam@gmail.com',
   maxEmailSendInterval: 500, // at most one email per this time(ms)
   labels: {
