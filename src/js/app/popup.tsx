@@ -26,22 +26,10 @@ export default class Popup extends React.Component<IAppProps, IAppState> {
     }, async (res: any) => {
       if (res) {
         // is logged in
-        try {
-          const r = await checkSubscription({
-            accessToken: res.access_token
-          })
-          this.setState({
-            isLoggedIn: true,
-            hasActiveSubscription: r.active,
-            isLoading: false
-          })
-        } catch (e) {
-          console.log(e)
-          this.setState({
-            isLoggedIn: true,
-            isLoading: false
-          })
-        }
+        this.setState({
+          isLoggedIn: true
+        })
+        this.checkSubscription(res.access_token)
       } else {
         this.setState({
           isLoading: false
@@ -90,12 +78,35 @@ export default class Popup extends React.Component<IAppProps, IAppState> {
       </Container>
     )
   }
+  private async checkSubscription(accessToken: string) {
+    try {
+      const r = await checkSubscription({
+        accessToken
+      })
+      this.setState({
+        hasActiveSubscription: r.active,
+        isLoading: false
+      })
+    } catch (e) {
+      console.log(e)
+      this.setState({
+        isLoading: false
+      })
+    }
+  }
   private onSignIn() {
     const msg: messages.IAuth0SignIn = {
       type: messages.Type.AUTH0_SIGN_IN
     }
-    chrome.runtime.sendMessage(msg, (authResponse) => {
-      console.log(authResponse)
+    this.setState({
+      isLoading: true
+    })
+    chrome.runtime.sendMessage(msg, async (authResponse) => {
+      console.log('signed in', authResponse)
+      this.setState({
+        isLoggedIn: true
+      })
+      this.checkSubscription(authResponse.access_token)
     })
   }
   private onSignOut() {
