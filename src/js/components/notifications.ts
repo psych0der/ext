@@ -1,3 +1,5 @@
+import settings from "../settings";
+
 export function firstTime(onClickSignInBtn: () => void, onCloseNotif?: () => void) {
   chrome.notifications.create({
     buttons: [
@@ -62,7 +64,18 @@ export function authFailed(onTryAgainClick: () => void, onCloseNotif?: () => voi
 export function authSuccess() {
   chrome.notifications.create({
     iconUrl: './icons/icon.png',
-    message: 'You can now use the EXT_NAME extension.',
+    message: `You can now use ${settings.extensionName} to send email campaigns!`,
+    title: 'Login Successful',
+    type: 'basic'
+  }, (notifId) => {
+    removeNotifTimeout(notifId)
+  })
+}
+
+export function auth0Success() {
+  chrome.notifications.create({
+    iconUrl: './icons/icon.png',
+    message: `You have successfully logged in with your ${settings.extensionName} account.`,
     title: 'Login Successful',
     type: 'basic'
   }, (notifId) => {
@@ -80,6 +93,7 @@ function onClose(notifId: string, cb: () => void) {
 
 function onButtonClick(notifId: string, index: number, cb: () => void) {
   chrome.notifications.onButtonClicked.addListener((id, i) => {
+    chrome.notifications.clear(notifId)
     if (id === notifId && i === index) {
       cb()
     }

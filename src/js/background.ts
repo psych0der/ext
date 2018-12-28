@@ -56,6 +56,7 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
         scope: 'openid offline_access email'
       }).then((authResult: any) => {
         localStorage.setItem('authResult', JSON.stringify(authResult))
+        notifs.auth0Success()
         chrome.tabs.query({ active: true }, (tab) => {
           const m: messages.IAuth0LoggedIn = {
             type: messages.Type.AUTH0_LOGGED_IN,
