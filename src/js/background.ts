@@ -32,7 +32,16 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
       }
     })
   } else if (message.type === messages.Type.GMAIL_SIGN_IN) {
-    logIn(sender.tab.id)
+    // logIn(sender.tab.id)
+    auth(function cb(token, err) {
+      if (err) {
+        notifs.authFailed(() => {
+          auth(cb)
+        })
+      } else {
+        chrome.tabs.reload(sender.tab.id)
+      }
+    })
   } else if (message.type === messages.Type.CLEAR_TOKEN) {
     console.log(message.token)
     const url = `https://accounts.google.com/o/oauth2/revoke?token=${message.token}`
@@ -40,7 +49,7 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
       chrome.identity.removeCachedAuthToken({
         token: message.token
       }, () => {
-        logIn(sender.tab.id)
+        // logIn(sender.tab.id)
       })
     }).catch((e) => {
       console.log(e)

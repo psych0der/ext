@@ -3,6 +3,7 @@ import settings from './settings'
 import app from './app/app'
 import { open, destroy } from "./app/components/db"
 import { checkSubscription } from "./app/components/server";
+import { InboxSDKInstance } from "inboxsdk";
 
 const auth0: IAuth0 = {
   activeSubscription: false,
@@ -55,10 +56,13 @@ InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
   }
   chrome.runtime.sendMessage(m, async (res: ICheckAuthResponse | null) => {
     if (!res) {
+      /*
       const msg: IGmailSignIn = {
         type: Type.GMAIL_SIGN_IN
       }
       chrome.runtime.sendMessage(msg)
+      */
+      createGmailSignInModal(sdk)
     } else {
       // check if the credentials match the current signed in google account
       // if they don't, clear the token.
@@ -70,6 +74,7 @@ InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
           type: Type.CLEAR_TOKEN
         }
         chrome.runtime.sendMessage(msg)
+        createGmailSignInModal(sdk)
       } else {
         // check if this email has an active subscription.
         // if not, the user will need to login with their auth0 account
@@ -92,3 +97,25 @@ InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
     }
   })
 })
+
+function createGmailSignInModal(sdk: InboxSDKInstance) {
+  const el = document.createElement('div')
+  el.innerHTML = `
+    <div>To start sending emails, ${settings.extensionName} needs access to your Gmail account.</div>
+    <br />
+    <div id="send-btn" class="sendia-btn inboxsdk__compose_sendButton">Sign in</div>
+  `
+  const btn = el.querySelector('#send-btn')
+  btn.addEventListener('click', () => {
+    const msg: IGmailSignIn = {
+      type: Type.GMAIL_SIGN_IN
+    }
+    chrome.runtime.sendMessage(msg)
+  }, {
+      once: true
+    })
+  sdk.Widgets.showModalView({
+    el,
+    title: 'Sendia - Gmail Access Required'
+  })
+}
