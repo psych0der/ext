@@ -29,56 +29,55 @@ export async function getCampaignList(userId: string) {
 }
 
 export async function updateCampaigns(userId: string, googleToken: string) {
-  const h = await getHistoryId({
-    userId
-  })
-  const historyId = h.historyId
-  console.log(historyId)
-  if (historyId === null) {
-    // get the latest historyId and send it to the server
-    const l = await getLatestHistoryId(googleToken)
-    const latestHistoryId = l.historyId
-    await updateHistoryId({
-      historyId: latestHistoryId,
+  try {
+    const h = await getHistoryId({
       userId
     })
-  } else {
-    // using the last saved historyId get all messages and cross reference
-    // with existing campaign ThreadIds
-    const res = await getHistory(historyId, googleToken)
-    console.log(res)
-    if (res.history !== undefined) {
-      const currentCampaigns = await getAllCampaigns()
-      const newMessages = getNewThreadIds(res)
-      const campaignsToUpdate: AppRequest.IUpdateCampaign[] = []
-      console.log(currentCampaigns)
+    const historyId = h.historyId
+    if (historyId === null) {
+      // get the latest historyId and send it to the server
+      const l = await getLatestHistoryId(googleToken)
+      const latestHistoryId = l.historyId
+      await updateHistoryId({
+        historyId: latestHistoryId,
+        userId
+      })
+    } else {
+      // using the last saved historyId get all messages and cross reference
+      // with existing campaign ThreadIds
+      const res = await getHistory(historyId, googleToken)
+      if (res.history !== undefined) {
+        const currentCampaigns = await getAllCampaigns()
+        const newMessages = getNewThreadIds(res)
+        const campaignsToUpdate: AppRequest.IUpdateCampaign[] = []
 
-      newMessages.forEach((msgId) => {
-        currentCampaigns.forEach((campaign) => {
-          console.log(campaign)
-          campaign.sentThreadIds.forEach((campMsgId) => {
-            console.log(campMsgId, msgId)
-            if (campMsgId === msgId) {
-              campaignsToUpdate.push({
-                campaignId: campaign.campaignId,
-                userId,
-                replies: 1
-              })
-            }
+        // update replies of matched threadIds
+        newMessages.forEach((msgId) => {
+          currentCampaigns.forEach((campaign) => {
+            campaign.sentThreadIds.forEach((campMsgId) => {
+              if (campMsgId === msgId) {
+                campaignsToUpdate.push({
+                  campaignId: campaign.campaignId,
+                  userId,
+                  replies: 1
+                })
+              }
+            })
           })
         })
+        const requests = campaignsToUpdate.map((body) => {
+          return updateCampaign(body)
+        })
+        await Promise.all(requests)
+      }
+      // update the latest historyId
+      await updateHistoryId({
+        historyId: res.historyId,
+        userId
       })
-      console.log(campaignsToUpdate)
-      const requests = campaignsToUpdate.map((body) => {
-        return updateCampaign(body)
-      })
-      await Promise.all(requests)
     }
-    // update the latest historyId
-    await updateHistoryId({
-      historyId: res.historyId,
-      userId
-    })
+  } catch (err) {
+    console.log('Failed to update campaigns', err)
   }
 }
 
