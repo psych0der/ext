@@ -1,4 +1,4 @@
-const useLocalHost = true
+const useLocalHost = false
 export default {
   extensionName: 'Sendia',
   googleApiKey: 'AIzaSyCC1m58oVvPminiAqiZmKeaRd_yljDk9s0',

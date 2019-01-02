@@ -1,3 +1,6 @@
+import { InboxSDKInstance } from "inboxsdk";
+import { Divider } from "semantic-ui-react";
+
 export function createElement(el: string) {
   const e = document.createElement(el)
   e.id = 'sendia'
@@ -55,5 +58,14 @@ export function wait(timeMs: number = 1000) {
     } catch (e) {
       rej(e)
     }
+  })
+}
+
+export function displayModalError(sdk: InboxSDKInstance, msg: string) {
+  const el = document.createElement('div')
+  el.innerText = msg
+  sdk.Widgets.showModalView({
+    el,
+    title: 'Error',
   })
 }

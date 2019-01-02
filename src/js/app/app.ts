@@ -3,7 +3,7 @@ import settings from "../settings"
 // @ts-ignore
 import Tribute from 'tributejs/src/Tribute'
 import mergeModalContent from "./components/mail-merge";
-import { requestHeaders, Base64EncodeUrl, addClass, createElement, addCss, waitForElement } from "./components/utils";
+import { requestHeaders, Base64EncodeUrl, addClass, createElement, addCss, waitForElement, displayModalError } from "./components/utils";
 import mailMerge from "./components/mail-merge";
 import { defaultTokens, defaultTokenData, replaceTokens } from "./components/tokens"
 import { ICheckAuthResponse } from '../components/messages';
@@ -66,7 +66,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
     updateCampaigns(userId, googleToken)
   }, 120000)
 
-  // add merge button next to search bar
+  // add merge functionality after search bar is available
   waitForElement('#aso_search_form_anchor', (el) => {
     if (el) {
       mailMerge(sdk, googleToken)
@@ -98,6 +98,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
   })
 
   // composeView buttons
+  // test button
   sdk.Compose.registerComposeViewHandler((composeView) => {
     addAutocomplete(composeView)
     composeView.addButton({
@@ -126,6 +127,8 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
         })
       }
     })
+
+    // send button
     composeView.addButton({
       iconClass: 'sendia-send',
       title: 'Send',
@@ -150,29 +153,9 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
               unSubEmails: userInfo.emails,
               unSubLink: newCampaign.unsubLink,
               userType: auth.isLoggedIn && auth.activeSubscription ? 'paid' : 'free'
-            }, async (err, campaignRes: ICampaignResult) => {
-              if (err) {
-                return console.log(err)
-              }
-              try {
-                const report = await createReportEmail(googleToken, campaignRes.reportTitle)
-                await dbCreateCampaign({
-                  id: newCampaign.campaignId,
-                  reportMessageId: report.id,
-                  sentThreadIds: campaignRes.sentThreadIds
-                })
-                const updateRes = await updateCampaign({
-                  campaignId: newCampaign.campaignId,
-                  userId,
-                  reportMessageId: report.id,
-                  sentThreadIds: campaignRes.sentThreadIds,
-                  failedMessages: campaignRes.failedEmails,
-                  sentMessages: campaignRes.sentEmails
-                })
-              } catch (e) {
-                console.log('Campaign update failed.', e)
-              }
-            })
+            }, onCampaignFinish(newCampaign, (err) => {
+              displayModalError(ixSdk, `Campaign update failed: ${JSON.stringify(err)}`)
+            }))
           }, () => {
             return modal.destroyed
           })
@@ -180,8 +163,9 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
             el,
             title: 'Your Account...'
           })
-        } catch (e) {
-          console.log('Campaign creation failed.', e)
+        } catch (err) {
+          displayModalError(ixSdk, `Campaign creation failed: ${err}`)
+          console.log('Campaign creation failed.', err)
         }
       }
     })
@@ -303,8 +287,35 @@ function emailsRemainingModalEl(
       create()
       clearInterval(int)
     }
-  }, 500)
+  }, 50)
 
   create()
   return div
+}
+
+function onCampaignFinish(newCampaign: AppResponse.INewCampaign, onUpdateError: (err: any) => void) {
+  return async (err: any, campaignRes: ICampaignResult) => {
+    if (err) {
+      return console.log(err)
+    }
+    try {
+      const report = await createReportEmail(googleToken, campaignRes.reportTitle)
+      await dbCreateCampaign({
+        id: newCampaign.campaignId,
+        reportMessageId: report.id,
+        sentThreadIds: campaignRes.sentThreadIds
+      })
+      await updateCampaign({
+        campaignId: newCampaign.campaignId,
+        userId,
+        reportMessageId: report.id,
+        sentThreadIds: campaignRes.sentThreadIds,
+        failedMessages: campaignRes.failedEmails,
+        sentMessages: campaignRes.sentEmails
+      })
+    } catch (e) {
+      console.log('Campaign update failed.', e)
+      onUpdateError(e)
+    }
+  }
 }
