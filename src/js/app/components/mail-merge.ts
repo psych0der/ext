@@ -15,9 +15,9 @@ export default function mailMerge(sdk: InboxSDKInstance, googleToken: string) {
   createMergeBtn(() => {
     const content = mergeModalContent((msg) => {
       ixsdk.ButterBar.showError({
-        text: msg
+        text: msg,
       })
-      modal.close()
+      // modal.close()
     }, () => {
       modal.close()
     })
@@ -80,8 +80,8 @@ function form(files: IFile[], onError: (msg: string) => void, onComposeCreated: 
   div.style.display = 'flex'
   select.innerHTML = `
     ${files.map((f) => {
-      return `<option value='${f.id}'>${f.name}</option>`
-    }).join()}
+    return `<option value='${f.id}'>${f.name}</option>`
+  }).join()}
   `
   addClass(select, 'merge-select')
   btn.innerText = 'Create'
@@ -127,6 +127,12 @@ function composeFromSheet(fileId: string, onError: (err: any) => void, onCompose
     if (emailIndex === null) {
       throw Error(`Can't find any email addresses! Check your spreadsheet and try again.`)
     }
+    const missingCells = missingColumnCells(emailIndex, rowData)
+    if (missingCells.length === 1) {
+      throw Error(`Row ${missingCells[0]} is missing an email address. Please fix to continue.`)
+    } else if(missingCells.length > 1){
+      throw Error(`Row ${missingCells.join(', ')} are missing email addresses. Please fix to continue.`)
+    }
     return ixsdk.Compose.openNewComposeView().then((composeView) => {
       const placeholders = createAutocompleteVals(header)
       // set tribute collection values to the header names
@@ -153,8 +159,18 @@ function getEmails(rowIndex: number, rowData: any[]) {
   })
 }
 
+function missingColumnCells(rowIndex: number, rowData: any[]) {
+  const missing = []
+  for (let index = 0; index < rowData.length; index++) {
+    const row = rowData[index];
+    if (!row.values[rowIndex] || !row.values[rowIndex].formattedValue) {
+      missing.push(index + 2)
+    }
+  }
+  return missing
+}
+
 function getEmailIndex(rowData: any[]) {
-  console.log(rowData)
   for (let index = 0; index < rowData.length; index++) {
     const element = rowData[index]
     if (isEmail(element.formattedValue)) {
