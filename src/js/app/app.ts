@@ -64,7 +64,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
   // update every 2 minutes
   setInterval(() => {
     updateCampaigns(userId, googleToken)
-  }, 120000)
+  }, 30000)
 
   // add merge functionality after search bar is available
   waitForElement('#aso_search_form_anchor', (el) => {
