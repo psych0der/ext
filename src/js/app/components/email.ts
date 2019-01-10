@@ -141,7 +141,6 @@ export function sendEmail(options: ISendEmailOptions, cb: (err: null | any, res?
   console.log('difference ', timeDiff)
   wait(timeDiff < settings.maxEmailSendInterval ? (settings.maxEmailSendInterval - timeDiff) : 0).then(() => {
     const message = createMessage({
-      from: options.userEmail,
       message: options.message,
       recepient: options.recepient,
       subject: options.subject,
@@ -179,7 +178,7 @@ export function sendEmail(options: ISendEmailOptions, cb: (err: null | any, res?
 interface IMessageOptions {
   message: string,
   subject: string,
-  from: string,
+  from?: string,
   unSubLink?: string,
   imgLink?: string,
   recepient?: string,
@@ -190,11 +189,15 @@ export function createMessage(options: IMessageOptions) {
   const messageContents = [
     'Content-Type: text/html; charset="UTF-8";\r\n',
     'MIME-Version: 1.0\r\n',
-    `to: ${options.recepient}\r\n`,
-    `from: ${options.from}\r\n`,
-    `subject: ${options.subject}\r\n\r\n`,
-    `${options.message}\r\n`,
+    `to: ${options.recepient}\r\n`
   ]
+  if (options.from) {
+    messageContents.push(`from: ${options.from}\r\n`)
+  }
+  messageContents.push(
+    `subject: ${options.subject}\r\n\r\n`,
+    `${options.message}\r\n`
+  )
   if (options.unSubLink) {
     messageContents.push(
       `<div style="margin-top:50px;">Don't want to receive any more emails? <a href="${options.unSubLink}">Click here to unsubscribe.</a></div>\r\n`
