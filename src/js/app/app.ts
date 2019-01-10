@@ -118,7 +118,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
               testEmail: emailAddress,
               unSubLink: `${settings.host}/unsubscribe/test`,
               userEmail: sdk.User.getEmailAddress(),
-              userType: auth.isLoggedIn && auth.activeSubscription ? 'paid' : 'free'
+              userType: auth.activeSubscription ? 'paid' : 'free'
             }, () => {
               //
             })
@@ -152,7 +152,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
               userEmail: sdk.User.getEmailAddress(),
               unSubEmails: userInfo.emails,
               unSubLink: newCampaign.unsubLink,
-              userType: auth.isLoggedIn && auth.activeSubscription ? 'paid' : 'free'
+              userType: auth.activeSubscription ? 'paid' : 'free'
             }, onCampaignFinish(newCampaign, (err) => {
               displayModalError(ixSdk, `Campaign update failed: ${JSON.stringify(err)}`)
             }))
