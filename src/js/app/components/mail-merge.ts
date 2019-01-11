@@ -14,10 +14,10 @@ export default function mailMerge(sdk: InboxSDKInstance, googleToken: string) {
   gToken = googleToken
   createMergeBtn(() => {
     const content = mergeModalContent((msg) => {
+      modal.close()
       ixsdk.ButterBar.showError({
         text: msg,
       })
-      // modal.close()
     }, () => {
       modal.close()
     })
@@ -72,6 +72,18 @@ function mergeModalContent(onError: (msg: string) => void, onComposeCreated: () 
   return div
 }
 
+function continueModalContent(missingRows: number[]) {
+  const div = document.createElement('div')
+  if (missingRows.length === 1) {
+    div.innerHTML = `<p>Row <b>${missingRows[0]}</b> is missing an email address.</p>
+    <p>Do you want to continue? These rows will be skipped.</p>`
+  } else if (missingRows.length > 1) {
+    div.innerHTML = `<p>Rows <b>${missingRows.join(', ')}</b> are missing email addresses.</p>
+    <p>Do you want to continue? These rows will be skipped.</p>`
+  }
+  return div
+}
+
 function form(files: IFile[], onError: (msg: string) => void, onComposeCreated: () => void) {
   const div = createElement('div')
   const btn = createElement('div')
@@ -103,17 +115,17 @@ function loader() {
   return div
 }
 
-function composeFromSheet(fileId: string, onError: (err: any) => void, onComposeCreated: () => void) {
+async function composeFromSheet(fileId: string, onError: (err: any) => void, onComposeCreated: () => void) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${fileId}?key=${settings.googleApiKey}&includeGridData=true`
-  onComposeCreated()
   ixsdk.ButterBar.showMessage({
-    text: 'Creating email from spreadsheet.'
+    text: 'Checking spreadsheet.'
   })
-  fetch(url, {
-    headers: requestHeaders(gToken),
-  }).then((res) => {
-    return res.json()
-  }).then((res) => {
+  try {
+    const res = await fetch(url, {
+      headers: requestHeaders(gToken),
+    }).then((res) => {
+      return res.json()
+    })
     const sheet = res.sheets[0]
     const data = sheet.data[0].rowData
     if (data.length < 2) {
@@ -127,13 +139,37 @@ function composeFromSheet(fileId: string, onError: (err: any) => void, onCompose
     if (emailIndex === null) {
       throw Error(`Can't find any email addresses! Check your spreadsheet and try again.`)
     }
-    const missingCells = missingColumnCells(emailIndex, rowData)
-    if (missingCells.length === 1) {
-      throw Error(`Row ${missingCells[0]} is missing an email address. Please fix to continue.`)
-    } else if(missingCells.length > 1){
-      throw Error(`Row ${missingCells.join(', ')} are missing email addresses. Please fix to continue.`)
+    const missingRows = missingEmailRows(emailIndex, rowData)
+    if (missingRows.length > 0) {
+      const modal = ixsdk.Widgets.showModalView({
+        title: 'Email addresses missing',
+        el: continueModalContent(missingRows),
+        buttons: [{
+          title: 'Go back',
+          text: 'Go back',
+          onClick() {
+            modal.close()
+          }
+        }, {
+          title: 'Continue',
+          text: 'Continue',
+          onClick() {
+            modal.close()
+            createComposeView()
+          }
+        }]
+      })
+    } else {
+      createComposeView()
     }
-    return ixsdk.Compose.openNewComposeView().then((composeView) => {
+    async function createComposeView() {
+      onComposeCreated()
+      ixsdk.ButterBar.showMessage({
+        text: 'Creating email from spreadsheet.'
+      })
+      const cleanedData = removeMissingEmailRows(missingRows, rowData)
+      console.log(cleanedData, rowData)
+      const composeView = await ixsdk.Compose.openNewComposeView()
       const placeholders = createAutocompleteVals(header)
       // set tribute collection values to the header names
       // @ts-ignore
@@ -142,29 +178,46 @@ function composeFromSheet(fileId: string, onError: (err: any) => void, onCompose
       // @ts-ignore
       composeView.tokens = headerTokens
       // @ts-ignore
-      composeView.customTokenData = customTokenData(headerTokens, rowData)
+      composeView.customTokenData = customTokenData(headerTokens, cleanedData)
       // @ts-ignore
-      composeView.customData = rowData
-      composeView.setToRecipients(getEmails(emailIndex, rowData))
-    })
-  }).catch((err) => {
+      composeView.customData = cleanedData
+      console.log(emailIndex, cleanedData)
+      composeView.setToRecipients(getEmails(emailIndex, cleanedData))
+    }
+  } catch (err) {
     onError(err.message)
     console.log(err)
-  })
+  }
 }
 
-function getEmails(rowIndex: number, rowData: any[]) {
+function getEmails(emailIndex: number, rowData: any[]) {
   return rowData.map((row) => {
-    return row.values[rowIndex].formattedValue
+    return row.values[emailIndex].formattedValue
   })
 }
 
-function missingColumnCells(rowIndex: number, rowData: any[]) {
+function removeMissingEmailRows(rowsToRemove: number[], data: any[]) {
+  const dataCopy = data.slice()
+  for (let index = rowsToRemove.length - 1; index >= 0; index--) {
+    const row = rowsToRemove[index]
+    dataCopy.splice(row, 1)
+  }
+  return dataCopy
+}
+
+/**
+ * Returns empty cells for a given column of a given data set.
+ *
+ * @param {number} rowIndex
+ * @param {any[]} rowData
+ * @returns
+ */
+function missingEmailRows(rowIndex: number, data: any[]) {
   const missing = []
-  for (let index = 0; index < rowData.length; index++) {
-    const row = rowData[index];
-    if (!row.values[rowIndex] || !row.values[rowIndex].formattedValue) {
-      missing.push(index + 2)
+  for (let index = 0; index < data.length; index++) {
+    const row = data[index];
+    if (!row.values || !row.values[rowIndex] || !row.values[rowIndex].formattedValue) {
+      missing.push(index)
     }
   }
   return missing
