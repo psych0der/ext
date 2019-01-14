@@ -25,7 +25,7 @@ let ixSdk: InboxSDKInstance
 let userId: string
 let googleToken: string
 
-export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse, auth: IAuth0) {
+export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse, auth: IAuth0, lock: Auth0LockStatic) {
   ixSdk = sdk
   googleToken = gmailAuth.token
   userId = gmailAuth.userId
@@ -139,7 +139,8 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
           const el = emailsRemainingModalEl({
             auth,
             emailCount: composeView.getToRecipients().length,
-            userInfo
+            userInfo,
+            lock
           }, async () => {
             modal.close()
             composeView.close()
@@ -161,7 +162,8 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
           })
           const modal = ixSdk.Widgets.showModalView({
             el,
-            title: 'Your Account...'
+            title: 'Your Account...',
+            bu
           })
         } catch (err) {
           displayModalError(ixSdk, `Campaign creation failed: ${err}`)
@@ -222,7 +224,8 @@ function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
 interface IEmailsRemainingOpts {
   userInfo: AppResponse.IUserInfo,
   emailCount: number,
-  auth: IAuth0
+  auth: IAuth0,
+  lock: Auth0LockStatic
 }
 
 function emailsRemainingModalEl(

@@ -1,6 +1,6 @@
 const jwtDecode = require('jwt-decode')
 
-const ITEM_NAME = 'authResult'
+const AUTH_KEY = 'authResult'
 
 export function isLoggedIn(token: string) {
   try {
@@ -14,11 +14,15 @@ export function isLoggedIn(token: string) {
 }
 
 export function signOut() {
-  localStorage.setItem(ITEM_NAME, null)
+  localStorage.setItem(AUTH_KEY, null)
 }
 
 export function getAuthResult(): any {
   return JSON.parse(localStorage.getItem('authResult'))
+}
+
+export function setAuthResult(authResult: any): any {
+  localStorage.setItem(AUTH_KEY, JSON.stringify(authResult))
 }
 
 export function getJwtToken(): string {
