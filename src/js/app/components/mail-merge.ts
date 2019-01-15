@@ -9,9 +9,6 @@ interface IFile {
 let ixsdk: InboxSDKInstance
 let gToken: string
 
-
-console.log(location.hash)
-
 export default function mailMerge(sdk: InboxSDKInstance, googleToken: string) {
   ixsdk = sdk
   gToken = googleToken

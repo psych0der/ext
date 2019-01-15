@@ -39,7 +39,7 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
           auth(cb)
         })
       } else {
-        chrome.tabs.reload(sender.tab.id)
+        sendResponse(true)
       }
     })
   } else if (message.type === messages.Type.CLEAR_TOKEN) {
@@ -90,6 +90,10 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
   } else if (message.type === messages.Type.AUTH0_SIGN_OUT) {
     localStorage.clear()
     sendResponse(true)
+    chrome.tabs.getSelected((tab) => {
+      console.log(tab)
+      chrome.tabs.sendMessage(tab.id, message)
+    })
   } else if (message.type === messages.Type.AUTH0_UPDATE_RESULT) {
     setAuthResult(message.result)
     sendResponse(true)

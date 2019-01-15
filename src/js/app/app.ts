@@ -162,8 +162,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
           })
           const modal = ixSdk.Widgets.showModalView({
             el,
-            title: 'Your Account...',
-            bu
+            title: 'Your Account...'
           })
         } catch (err) {
           displayModalError(ixSdk, `Campaign creation failed: ${err}`)
@@ -265,7 +264,8 @@ function emailsRemainingModalEl(
     }
     if (!auth.isLoggedIn && !auth.activeSubscription) {
       d.innerHTML += `
-        <p>You are not logged in. If you are a subscriber, please log into your account by clicking the extension icon.</p>
+        <p><b>You are not logged in.</b> If you are a subscriber, please log into your <br /> Sendia account by clicking the sign in button below.</p>
+        <div id="sign-in-btn" class="sendia-btn inboxsdk__compose_sendButton">Sign in</div>
       `
     } else if (!auth.activeSubscription) {
       d.innerHTML += `
@@ -278,6 +278,15 @@ function emailsRemainingModalEl(
       const button = d.querySelector('#send-btn')
       button.addEventListener('click', onSend)
     }
+
+    const signInBtn = d.querySelector('#sign-in-btn')
+    if (signInBtn) {
+      signInBtn.addEventListener('click', () => {
+        console.log('clicked')
+        opts.lock.show()
+      })
+    }
+
     div.appendChild(d)
   }
 

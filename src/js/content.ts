@@ -16,6 +16,8 @@ const lock = new window.Auth0Lock(
   'fyC5bVRJv30lSmkDKSYw2wwADXQkIwlp',
   'sendiateam.auth0.com',
   {
+    allowSignUp: false,
+    autoclose: true,
     auth: {
       redirect: false,
       responseType: 'token id_token',
@@ -64,11 +66,13 @@ chrome.runtime.onMessage.addListener(async (message: ITypes, sender, sendRespons
       const r = await checkSubscription({
         accessToken: message.profile.access_token
       })
-      console.log(r)
       auth0.activeSubscription = r.active
     } catch (e) {
       console.log(e)
     }
+  } else if (message.type === Type.AUTH0_SIGN_OUT) {
+    auth0.isLoggedIn = false
+    auth0.activeSubscription = false
   }
 })
 
@@ -89,12 +93,16 @@ chrome.runtime.sendMessage({
       console.log(e)
     }
   } else {
-    lock.show()
+    // lock.show()
   }
 })
 
 // @ts-ignore
-InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
+InboxSDK.load(1, settings.inboxSDK).then(prepareApp).catch((err) => {
+  console.log(err)
+})
+
+async function prepareApp(sdk: InboxSDKInstance) {
   // open the database
   await open()
   const m: ICheckAuth = {
@@ -134,11 +142,11 @@ InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
           console.log(err)
         })
         console.log('running app')
-        app(sdk, res, auth0)
+        app(sdk, res, auth0, lock)
       }
     }
   })
-})
+}
 
 function createGmailSignInModal(sdk: InboxSDKInstance) {
   const el = document.createElement('div')
@@ -152,11 +160,17 @@ function createGmailSignInModal(sdk: InboxSDKInstance) {
     const msg: IGmailSignIn = {
       type: Type.GMAIL_SIGN_IN
     }
-    chrome.runtime.sendMessage(msg)
+    chrome.runtime.sendMessage(msg, () => {
+      modal.close()
+      prepareApp(sdk)
+      if (!auth0.isLoggedIn && !auth0.activeSubscription) {
+        lock.show()
+      }
+    })
   }, {
       once: true
     })
-  sdk.Widgets.showModalView({
+  const modal = sdk.Widgets.showModalView({
     el,
     title: 'Sendia - Gmail Access Required'
   })
