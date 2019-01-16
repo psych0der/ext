@@ -150,8 +150,9 @@ async function prepareApp(sdk: InboxSDKInstance) {
 
 function createGmailSignInModal(sdk: InboxSDKInstance) {
   const el = document.createElement('div')
+  const email = sdk.User.getEmailAddress()
   el.innerHTML = `
-    <div>To start sending emails, ${settings.extensionName} needs access to your Gmail account.</div>
+    <div>To start sending emails, ${settings.extensionName} needs access to the Gmail account <b>${email}</b></div>
     <br />
     <div id="send-btn" class="sendia-btn inboxsdk__compose_sendButton">Sign in</div>
   `
@@ -161,6 +162,7 @@ function createGmailSignInModal(sdk: InboxSDKInstance) {
       type: Type.GMAIL_SIGN_IN
     }
     chrome.runtime.sendMessage(msg, () => {
+      console.log('signed in')
       modal.close()
       prepareApp(sdk)
       if (!auth0.isLoggedIn && !auth0.activeSubscription) {
