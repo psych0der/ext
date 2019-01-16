@@ -25,7 +25,7 @@ let ixSdk: InboxSDKInstance
 let userId: string
 let googleToken: string
 
-export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse, auth: IAuth0) {
+export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse, auth: IAuth0, lock: Auth0LockStatic) {
   ixSdk = sdk
   googleToken = gmailAuth.token
   userId = gmailAuth.userId
@@ -139,7 +139,8 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
           const el = emailsRemainingModalEl({
             auth,
             emailCount: composeView.getToRecipients().length,
-            userInfo
+            userInfo,
+            lock
           }, async () => {
             modal.close()
             composeView.close()
@@ -222,7 +223,8 @@ function addAutocomplete(composeView: InboxSDK.Compose.ComposeView) {
 interface IEmailsRemainingOpts {
   userInfo: AppResponse.IUserInfo,
   emailCount: number,
-  auth: IAuth0
+  auth: IAuth0,
+  lock: Auth0LockStatic
 }
 
 function emailsRemainingModalEl(
@@ -262,7 +264,8 @@ function emailsRemainingModalEl(
     }
     if (!auth.isLoggedIn && !auth.activeSubscription) {
       d.innerHTML += `
-        <p>You are not logged in. If you are a subscriber, please log into your account by clicking the extension icon.</p>
+        <p><b>You are not logged in.</b> If you are a subscriber, please log into your <br /> Sendia account by clicking the sign in button below.</p>
+        <div id="sign-in-btn" class="sendia-btn inboxsdk__compose_sendButton">Sign in</div>
       `
     } else if (!auth.activeSubscription) {
       d.innerHTML += `
@@ -275,6 +278,15 @@ function emailsRemainingModalEl(
       const button = d.querySelector('#send-btn')
       button.addEventListener('click', onSend)
     }
+
+    const signInBtn = d.querySelector('#sign-in-btn')
+    if (signInBtn) {
+      signInBtn.addEventListener('click', () => {
+        console.log('clicked')
+        opts.lock.show()
+      })
+    }
+
     div.appendChild(d)
   }
 

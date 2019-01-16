@@ -1,9 +1,56 @@
-import { ICheckAuth, Type, IGmailSignIn, ICheckAuthResponse, IClearToken, ITypes, } from "./components/messages"
+import { ICheckAuth, Type, IGmailSignIn, ICheckAuthResponse, IClearToken, ITypes, IAuth0UpdateResult } from "./components/messages"
 import settings from './settings'
 import app from './app/app'
 import { open, destroy } from "./app/components/db"
 import { checkSubscription } from "./app/components/server";
-import { InboxSDKInstance } from "inboxsdk";
+import { InboxSDKInstance } from "inboxsdk"
+const jwtDecode = require('jwt-decode')
+
+declare global {
+  interface Window {
+    Auth0Lock: Auth0LockStatic
+  }
+}
+
+const lock = new window.Auth0Lock(
+  'fyC5bVRJv30lSmkDKSYw2wwADXQkIwlp',
+  'sendiateam.auth0.com',
+  {
+    allowSignUp: false,
+    autoclose: true,
+    auth: {
+      redirect: false,
+      responseType: 'token id_token',
+      params: {
+        scope: 'openid offline_access email',
+      }
+    }
+  }
+)
+
+lock.on('authenticated', async (authResult) => {
+  console.log(authResult)
+  const decode = jwtDecode(authResult.idToken)
+  const m: IAuth0UpdateResult = {
+    type: Type.AUTH0_UPDATE_RESULT,
+    result: {
+      access_token: authResult.accessToken,
+      id_token: authResult.idToken,
+      email: decode.email
+    }
+  }
+  chrome.runtime.sendMessage(m)
+  auth0.isLoggedIn = true
+  auth0.auth0Token = authResult.accessToken
+  try {
+    const r = await checkSubscription({
+      accessToken: authResult.accessToken
+    })
+    auth0.activeSubscription = r.active
+  } catch (e) {
+    console.log(e)
+  }
+})
 
 const auth0: IAuth0 = {
   activeSubscription: false,
@@ -19,11 +66,13 @@ chrome.runtime.onMessage.addListener(async (message: ITypes, sender, sendRespons
       const r = await checkSubscription({
         accessToken: message.profile.access_token
       })
-      console.log(r)
       auth0.activeSubscription = r.active
     } catch (e) {
       console.log(e)
     }
+  } else if (message.type === Type.AUTH0_SIGN_OUT) {
+    auth0.isLoggedIn = false
+    auth0.activeSubscription = false
   }
 })
 
@@ -43,14 +92,19 @@ chrome.runtime.sendMessage({
     } catch (e) {
       console.log(e)
     }
+  } else {
+    // lock.show()
   }
 })
 
 // @ts-ignore
-InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
+InboxSDK.load(1, settings.inboxSDK).then(prepareApp).catch((err) => {
+  console.log(err)
+})
+
+async function prepareApp(sdk: InboxSDKInstance) {
   // open the database
   await open()
-  // your app code using 'sdk' goes in here
   const m: ICheckAuth = {
     type: Type.CHECK_AUTH
   }
@@ -76,27 +130,23 @@ InboxSDK.load(1, settings.inboxSDK).then(async (sdk) => {
         chrome.runtime.sendMessage(msg)
         createGmailSignInModal(sdk)
       } else {
-        // check if this email has an active subscription.
+        // check if this email(using google token, NOT the auth0 token) has an active subscription.
         // if not, the user will need to login with their auth0 account
         console.log('checking sub')
-        try {
-          const r = await checkSubscription({
-            accessToken: res.token,
-            isGoogleToken: true
-          })
-          console.log(r)
-          if (r.active) {
-            auth0.activeSubscription = true
-          }
-        } catch (e) {
-          console.log(e)
-        }
+        checkSubscription({
+          accessToken: res.token,
+          isGoogleToken: true
+        }).then((res) => {
+          auth0.activeSubscription = res.active
+        }).catch((err) => {
+          console.log(err)
+        })
         console.log('running app')
-        app(sdk, res, auth0)
+        app(sdk, res, auth0, lock)
       }
     }
   })
-})
+}
 
 function createGmailSignInModal(sdk: InboxSDKInstance) {
   const el = document.createElement('div')
@@ -110,11 +160,17 @@ function createGmailSignInModal(sdk: InboxSDKInstance) {
     const msg: IGmailSignIn = {
       type: Type.GMAIL_SIGN_IN
     }
-    chrome.runtime.sendMessage(msg)
+    chrome.runtime.sendMessage(msg, () => {
+      modal.close()
+      prepareApp(sdk)
+      if (!auth0.isLoggedIn && !auth0.activeSubscription) {
+        lock.show()
+      }
+    })
   }, {
       once: true
     })
-  sdk.Widgets.showModalView({
+  const modal = sdk.Widgets.showModalView({
     el,
     title: 'Sendia - Gmail Access Required'
   })

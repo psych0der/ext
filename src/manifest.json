@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Sendia",
   "description": "Send mass email campaigns with gmail!",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "key": "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArJknFAoQBfCLUrungI3jJiu7uL/nG/a4BUljCgA6vv692Lw1uk6iWqUvBJPdXCsiRZeuQXekU4HdaCvJF3jFnxXn2W4/lDz8DCix4iGO7h+IfmJHg/z0l3CIx4X9q6ABbDSN2pzYgJZ9cOmrJ3bHZloTkiY5RZQVbZiRUUT2iy1HpIFVP8rBb8jNxG5q95Ga+qUoOqeF+XAMMWMucudY9AfH4dIHxlMd62vv6K1g52P8w632tIEcUCYWNfm7rfDaPGT2fP5GFGDrUO7TZ8GVDJw89L53mG/Ok7i9mCTFQGRXbFEhx8D22dw5I3/vIGBRiB2ERAbbRYmhejlN4ms7uQIDAQAB-----END PUBLIC KEY-----",
   "oauth2": {
     "client_id": "193054564435-piom2abbaujk94h9sebvlg83i20ej2ks.apps.googleusercontent.com",
@@ -24,14 +24,16 @@
     "identity",
     "notifications",
     "http://localhost:3000/*",
-    "https://sendia.us/*"
+    "https://sendia.us/*",
+    "https://cdn.auth0.com/*",
+    "https://sendiateam.auth0.com/*"
   ],
    "content_scripts": [
     {
       "matches": [
         "https://mail.google.com/*"
       ],
-      "js": ["js/inboxsdk.js","js/content.js"],
+      "js": ["js/auth0-lock.js","js/inboxsdk.js","js/content.js"],
       "run_at": "document_end"
     }
   ],

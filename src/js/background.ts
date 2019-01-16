@@ -5,7 +5,7 @@ import * as messages from './components/messages'
 import { requestHeaders } from './app/components/utils'
 import { open } from './app/components/db';
 import settings from './settings';
-import { isLoggedIn, getJwtToken, getAuthResult } from './components/auth0';
+import { isLoggedIn, getJwtToken, getAuthResult, setAuthResult } from './components/auth0';
 const Auth0 = require('auth0-chrome')
 
 chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResponse) => {
@@ -39,7 +39,7 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
           auth(cb)
         })
       } else {
-        chrome.tabs.reload(sender.tab.id)
+        sendResponse(true)
       }
     })
   } else if (message.type === messages.Type.CLEAR_TOKEN) {
@@ -62,9 +62,9 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
     } else {
       const a = new Auth0(settings.auth0.domain, settings.auth0.clientId).authenticate({
         device: 'chrome-extension',
-        scope: 'openid offline_access email'
+        scope: 'openid email'
       }).then((authResult: any) => {
-        localStorage.setItem('authResult', JSON.stringify(authResult))
+        setAuthResult(authResult)
         notifs.auth0Success()
         chrome.tabs.query({ active: true }, (tab) => {
           const m: messages.IAuth0LoggedIn = {
@@ -89,6 +89,13 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
     }
   } else if (message.type === messages.Type.AUTH0_SIGN_OUT) {
     localStorage.clear()
+    sendResponse(true)
+    chrome.tabs.getSelected((tab) => {
+      console.log(tab)
+      chrome.tabs.sendMessage(tab.id, message)
+    })
+  } else if (message.type === messages.Type.AUTH0_UPDATE_RESULT) {
+    setAuthResult(message.result)
     sendResponse(true)
   }
   return true
