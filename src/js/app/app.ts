@@ -25,10 +25,25 @@ let ixSdk: InboxSDKInstance
 let userId: string
 let googleToken: string
 
+export interface IUserDetails {
+  name: string,
+  email: string
+}
+
 export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse, auth: IAuth0, lock: Auth0LockStatic) {
   ixSdk = sdk
   googleToken = gmailAuth.token
   userId = gmailAuth.userId
+  const userDetails: IUserDetails = {
+    name: '',
+    email: sdk.User.getEmailAddress()
+  }
+  const contacts = sdk.User.getAccountSwitcherContactList()
+  contacts.forEach((contact) => {
+    if (contact.emailAddress === userDetails.email) {
+      userDetails.name = contact.name
+    }
+  })
   // check if labels have been created
   getMissingLabels(settings.labels, googleToken).then((missingLabelKeys) => {
     console.log(missingLabelKeys)
@@ -107,7 +122,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
       type: 'SEND_ACTION',
       onClick() {
         const modal = ixSdk.Widgets.showModalView({
-          el: testEmailContent(sdk.User.getEmailAddress(), (emailAddress) => {
+          el: testEmailContent(userDetails.email, (emailAddress) => {
             modal.close()
             sendCampaign({
               campaignId: 'test',
@@ -117,7 +132,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
               inboxSDK: ixSdk,
               testEmail: emailAddress,
               unSubLink: `${settings.host}/unsubscribe/test`,
-              userEmail: sdk.User.getEmailAddress(),
+              userDetails,
               userType: auth.activeSubscription ? 'paid' : 'free'
             }, () => {
               //
@@ -150,7 +165,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
               composeView,
               googleToken,
               inboxSDK: ixSdk,
-              userEmail: sdk.User.getEmailAddress(),
+              userDetails,
               unSubEmails: userInfo.emails,
               unSubLink: newCampaign.unsubLink,
               userType: auth.activeSubscription ? 'paid' : 'free'

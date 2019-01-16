@@ -7,7 +7,7 @@ import { getAllCampaigns } from './db';
 
 export async function createReportEmail(googleToken: string, reportTitle: string) {
   const message = createMessage({
-    from: settings.contactEmail,
+    from: `Sendia <${settings.contactEmail}>`,
     message: 'Loading email campaign report...',
     recepient: '',
     subject: reportTitle

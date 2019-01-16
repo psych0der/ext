@@ -3,12 +3,13 @@ import { queue } from 'async'
 import { defaultTokens, defaultTokenData, replaceTokens } from "./tokens"
 import { Base64EncodeUrl, requestHeaders, wait } from './utils';
 import { InboxSDKInstance } from 'inboxsdk';
+import { IUserDetails } from '../app';
 
 interface ISendCampaignOptions {
   googleToken: string,
   composeView: InboxSDK.Compose.ComposeView,
   inboxSDK: InboxSDKInstance,
-  userEmail: string,
+  userDetails: IUserDetails,
   testEmail?: string,
   campaignId: string,
   unSubLink: string,
@@ -94,7 +95,7 @@ export async function sendCampaign(opts: ISendCampaignOptions, onComplete: (err:
       message: msg,
       recepient: opts.testEmail ? opts.testEmail : rec.emailAddress,
       subject: sbjct,
-      userEmail: opts.userEmail,
+      userEmail: `${opts.userDetails.name} <${opts.userDetails.email}>`,
       unSubLink: `${opts.unSubLink}${rec.emailAddress}`,
       imgLink: `${settings.host}/campaign/open?campaignId=${opts.campaignId}&email=${rec.emailAddress}`,
       userType: opts.userType,
@@ -141,6 +142,7 @@ export function sendEmail(options: ISendEmailOptions, cb: (err: null | any, res?
   console.log('difference ', timeDiff)
   wait(timeDiff < settings.maxEmailSendInterval ? (settings.maxEmailSendInterval - timeDiff) : 0).then(() => {
     const message = createMessage({
+      from: options.userEmail,
       message: options.message,
       recepient: options.recepient,
       subject: options.subject,
@@ -189,10 +191,10 @@ export function createMessage(options: IMessageOptions) {
   const messageContents = [
     'Content-Type: text/html; charset="UTF-8";\r\n',
     'MIME-Version: 1.0\r\n',
-    `to: ${options.recepient}\r\n`
+    `To: ${options.recepient}\r\n`
   ]
   if (options.from) {
-    messageContents.push(`from: ${options.from}\r\n`)
+    messageContents.push(`From: ${options.from}\r\n`)
   }
   messageContents.push(
     `subject: ${options.subject}\r\n\r\n`,
