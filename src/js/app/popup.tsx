@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Grid, Button, Container, Dimmer, Loader } from 'semantic-ui-react'
+import { Grid, Button, Container, Dimmer, Loader, Image } from 'semantic-ui-react'
 import * as messages from '../components/messages'
 import { checkSubscription } from "./components/server";
 import settings from "../settings";
@@ -52,8 +52,10 @@ export default class Popup extends React.Component<IAppProps, IAppState> {
       <Container>
 
         <Grid>
-          <Grid.Row centered>
-            <div>Logo goes here</div>
+          <Grid.Row centered columns='1'>
+            <Grid.Column>
+              <Image centered src='/icons/logo.png' size='small' />
+            </Grid.Column>
           </Grid.Row>
           {isLoggedIn && !hasActiveSubscription ?
             <Grid.Row centered>

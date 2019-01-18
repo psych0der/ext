@@ -121,6 +121,7 @@ function logIn(tabId: number) {
   })
 }
 
+/*
 isFirstTimeUser((isFirstTime) => {
   if (isFirstTime) {
     getToken((token, err) => {
@@ -140,3 +141,5 @@ isFirstTimeUser((isFirstTime) => {
     })
   }
 })
+
+*/

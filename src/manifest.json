@@ -2,10 +2,10 @@
   "manifest_version": 2,
   "name": "Sendia",
   "description": "Send mass email campaigns with gmail!",
-  "version": "0.11.2",
-  "key": "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArJknFAoQBfCLUrungI3jJiu7uL/nG/a4BUljCgA6vv692Lw1uk6iWqUvBJPdXCsiRZeuQXekU4HdaCvJF3jFnxXn2W4/lDz8DCix4iGO7h+IfmJHg/z0l3CIx4X9q6ABbDSN2pzYgJZ9cOmrJ3bHZloTkiY5RZQVbZiRUUT2iy1HpIFVP8rBb8jNxG5q95Ga+qUoOqeF+XAMMWMucudY9AfH4dIHxlMd62vv6K1g52P8w632tIEcUCYWNfm7rfDaPGT2fP5GFGDrUO7TZ8GVDJw89L53mG/Ok7i9mCTFQGRXbFEhx8D22dw5I3/vIGBRiB2ERAbbRYmhejlN4ms7uQIDAQAB-----END PUBLIC KEY-----",
+  "version": "0.11.3",
+  "key": "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkRgbxtizWiSmNO4xFnaDI3sxgMA3ifxtfv6R70x51Pah3M6qOt2pXkWJzPA3Em7WZXfnTVWCUvUz0Zvh9CMsHaiDEO6/bLTR7GOpY85qRR7vBTKOZpBryRV3VmTX1VLIijWQeQj2Q71B0BPuHX0bQ/QEpEa141wIl7qPkLa83z2DIXWfRdpSSlAlilmN5fD55wLUNfhENjiVn/WVN4bjin8zayejqJvHJ/5FFNaOVE0eF87B6AWqxveL+tcxB13VIK4Wg/8wJvgOGfh52sdhpUOx88YvLIfX+xy2IRY7G3XgPR3fNVGLeXUFtMdh3DkhKkPhj7tdzvyIHR0PoTPNhQIDAQAB-----END PUBLIC KEY-----",
   "oauth2": {
-    "client_id": "193054564435-piom2abbaujk94h9sebvlg83i20ej2ks.apps.googleusercontent.com",
+    "client_id": "631473985497-vtklf9u12ts04qjs6bambp5g6n9en4a1.apps.googleusercontent.com",
     "scopes":[
       "https://www.googleapis.com/auth/userinfo.email",
       "https://www.googleapis.com/auth/userinfo.profile",

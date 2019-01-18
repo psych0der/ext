@@ -8,7 +8,7 @@ export function firstTime(onClickSignInBtn: () => void, onCloseNotif?: () => voi
       }
     ],
     iconUrl: './icons/icon.png',
-    message: 'Thanks for installing EXT_NAME. To start, we first need access to your Gmail account.',
+    message: `Thanks for installing ${settings.extensionName}! To start, we first need access to your Gmail account.`,
     title: 'Hi there!',
     type: 'basic'
   }, (notifId) => {
@@ -49,7 +49,7 @@ export function authFailed(onTryAgainClick: () => void, onCloseNotif?: () => voi
       },
     ],
     iconUrl: './icons/icon.png',
-    message: 'Access is required to use EXT_NAME. Would you like to try again?',
+    message: `Access is required to use ${settings.extensionName}. Would you like to try again?`,
     title: 'Access Not Granted',
     type: 'basic',
   }, (notifId) => {

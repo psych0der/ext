@@ -1,7 +1,7 @@
 const useLocalHost = false
 export default {
   extensionName: 'Sendia',
-  googleApiKey: 'AIzaSyCC1m58oVvPminiAqiZmKeaRd_yljDk9s0',
+  googleApiKey: 'AIzaSyCL8c8MbwiHdM2vV2oQdzwHle5RYL8HQ_M',
   inboxSDK: 'sdk_gmclone_e228e1960f',
   host: useLocalHost ? 'http://localhost:3000' : 'https://sendia.us',
   homePage: 'http://sendia.co',
