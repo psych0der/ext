@@ -73,6 +73,7 @@ function mergeModalContent(onError: (msg: string) => void, onComposeCreated: () 
 }
 
 function continueModalContent(missingRows: number[]) {
+  console.log(missingRows)
   const div = document.createElement('div')
   // the row numbers are indexed from 0
   // add two to each result to show the correct sheet row number
@@ -82,8 +83,8 @@ function continueModalContent(missingRows: number[]) {
     div.innerHTML = `<p>Row <b>${updatedMissingRows[0]}</b> is missing an email address.</p>
     <p>Do you want to continue? These rows will be skipped.</p>`
   } else if (missingRows.length > 1) {
-    let l = length - 2
-    let missingStr = `${updatedMissingRows.slice(0, l > 0 ? l : 1).join(', ')} and ${updatedMissingRows[length - 1]}`
+    const l = missingRows.length - 1
+    const missingStr = `${updatedMissingRows.slice(0, l).join(', ')} and ${updatedMissingRows[length - 1]}`
     div.innerHTML = `<p>Rows <b>${missingStr}</b> are missing email addresses.</p>
     <p>Do you want to continue? These rows will be skipped.</p>`
   }
