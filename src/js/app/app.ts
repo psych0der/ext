@@ -118,7 +118,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
     addAutocomplete(composeView)
     composeView.addButton({
       iconClass: 'sendia-send-test',
-      title: 'Send Test',
+      title: 'Test your Sendia email campaign',
       type: 'SEND_ACTION',
       onClick() {
         const modal = ixSdk.Widgets.showModalView({
@@ -146,7 +146,7 @@ export default function app(sdk: InboxSDKInstance, gmailAuth: ICheckAuthResponse
     // send button
     composeView.addButton({
       iconClass: 'sendia-send',
-      title: 'Send',
+      title: 'Send a Sendia mass email campaign',
       type: 'SEND_ACTION',
       onClick: async () => {
         try {
