@@ -40,8 +40,7 @@ module.exports = {
             { from: 'src/icons', to: '../icons' },
             { from: 'src/includes', to: '../' },
             { from: 'src/js/includes', to: '../js' },
-            { from: 'src/html', to: '../html' },
-            { from: 'src/manifest.json', to: '../' }
+            { from: 'src/html', to: '../html' }
         ])
     ]
 };
