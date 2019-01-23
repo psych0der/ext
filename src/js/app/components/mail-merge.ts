@@ -171,12 +171,14 @@ async function composeFromSheet(fileId: string, onError: (err: any) => void, onC
     }
     async function createComposeView() {
       onComposeCreated()
-      ixsdk.ButterBar.showMessage({
+      const msg = ixsdk.ButterBar.showMessage({
         text: 'Creating email from spreadsheet.'
       })
       const cleanedData = removeMissingEmailRows(missingRows, rowData)
       console.log(cleanedData, rowData)
       const composeView = await ixsdk.Compose.openNewComposeView()
+      // @ts-ignore
+      msg.destroy()
       const placeholders = createAutocompleteVals(header)
       // set tribute collection values to the header names
       // @ts-ignore
