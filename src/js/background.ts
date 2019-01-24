@@ -50,8 +50,10 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
         token: message.token
       }, () => {
         // logIn(sender.tab.id)
+        sendResponse(true)
       })
     }).catch((e) => {
+      sendResponse(false)
       console.log(e)
     })
   } else if (message.type === messages.Type.AUTH0_SIGN_IN) {

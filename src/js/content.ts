@@ -123,12 +123,7 @@ async function prepareApp(sdk: InboxSDKInstance) {
       const email = sdk.User.getEmailAddress()
       console.log(res)
       if (email !== res.email) {
-        const msg: IClearToken = {
-          token: res.token,
-          type: Type.CLEAR_TOKEN
-        }
-        chrome.runtime.sendMessage(msg)
-        createGmailSignInModal(sdk)
+        createGmailSignInModal(sdk, clearToken(res.token))
       } else {
         // check if this email(using google token, NOT the auth0 token) has an active subscription.
         // if not, the user will need to login with their auth0 account
@@ -148,7 +143,7 @@ async function prepareApp(sdk: InboxSDKInstance) {
   })
 }
 
-function createGmailSignInModal(sdk: InboxSDKInstance) {
+function createGmailSignInModal(sdk: InboxSDKInstance, onClearToken?: (onComplete: () => void ) => void) {
   const el = document.createElement('div')
   const email = sdk.User.getEmailAddress()
   el.innerHTML = `
@@ -156,19 +151,27 @@ function createGmailSignInModal(sdk: InboxSDKInstance) {
     <br />
     <div id="send-btn" class="sendia-btn inboxsdk__compose_sendButton">Sign in</div>
   `
-  const btn = el.querySelector('#send-btn')
+  const btn = el.querySelector('#send-btn') as HTMLElement
   btn.addEventListener('click', () => {
-    const msg: IGmailSignIn = {
-      type: Type.GMAIL_SIGN_IN
-    }
-    chrome.runtime.sendMessage(msg, () => {
+    btn.innerText = 'Loading...'
+    const onComplete = () => {
       console.log('signed in')
       modal.close()
       prepareApp(sdk)
       if (!auth0.isLoggedIn && !auth0.activeSubscription) {
         lock.show()
       }
-    })
+    }
+    const signInMsg: IGmailSignIn = {
+      type: Type.GMAIL_SIGN_IN
+    }
+    if (onClearToken) {
+      onClearToken(() => {
+        chrome.runtime.sendMessage(signInMsg, onComplete)
+      })
+    } else {
+      chrome.runtime.sendMessage(signInMsg, onComplete)
+    }
   }, {
       once: true
     })
@@ -176,4 +179,14 @@ function createGmailSignInModal(sdk: InboxSDKInstance) {
     el,
     title: 'Sendia - Gmail Access Required'
   })
+}
+
+function clearToken(token: string) {
+  return (onComplete: () => void) => {
+    const msg: IClearToken = {
+      token,
+      type: Type.CLEAR_TOKEN
+    }
+    chrome.runtime.sendMessage(msg, onComplete)
+  }
 }
