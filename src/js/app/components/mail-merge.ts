@@ -41,7 +41,7 @@ function createMergeBtn(onClick: () => void) {
   div.setAttribute('aria-label', 'Select a Spreadsheet')
   div.setAttribute('role', 'button')
   div.setAttribute('data-tooltip', 'Select a Spreadsheet')
-  div.innerText = 'Merge'
+  div.innerText = 'New Sendia Campaign'
   div.addEventListener('click', onClick)
   p.appendChild(div)
 }

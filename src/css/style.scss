@@ -1,5 +1,5 @@
 $id: '#sendia';
-$bg-color: coral;
+$bg-color: #FFB300;
 
 @mixin font {
   font-family: inherit;
@@ -70,7 +70,7 @@ $bg-color: coral;
 }
 
 .sendia-send::after {
-  content: 'Send';
+  content: 'Send with Sendia';
   padding-right: 3px;
 }
 
@@ -93,6 +93,6 @@ $bg-color: coral;
 }
 
 .sendia-report-table tr:nth-child(even) {
-  background-color: coral;
+  background-color: $bg-color;
   color: white;
 }

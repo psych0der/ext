@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Sendia",
   "description": "Send mass email campaigns with gmail!",
-  "version": "0.11.7",
+  "version": "0.11.10",
   "oauth2": {
     "client_id": "631473985497-vtklf9u12ts04qjs6bambp5g6n9en4a1.apps.googleusercontent.com",
     "scopes":[

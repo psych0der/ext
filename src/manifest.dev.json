@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Sendia - DEV",
   "description": "Send mass email campaigns with gmail!",
-  "version": "0.11.9",
+  "version": "0.11.10",
   "key": "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkRgbxtizWiSmNO4xFnaDI3sxgMA3ifxtfv6R70x51Pah3M6qOt2pXkWJzPA3Em7WZXfnTVWCUvUz0Zvh9CMsHaiDEO6/bLTR7GOpY85qRR7vBTKOZpBryRV3VmTX1VLIijWQeQj2Q71B0BPuHX0bQ/QEpEa141wIl7qPkLa83z2DIXWfRdpSSlAlilmN5fD55wLUNfhENjiVn/WVN4bjin8zayejqJvHJ/5FFNaOVE0eF87B6AWqxveL+tcxB13VIK4Wg/8wJvgOGfh52sdhpUOx88YvLIfX+xy2IRY7G3XgPR3fNVGLeXUFtMdh3DkhKkPhj7tdzvyIHR0PoTPNhQIDAQAB-----END PUBLIC KEY-----",
   "oauth2": {
     "client_id": "631473985497-vtklf9u12ts04qjs6bambp5g6n9en4a1.apps.googleusercontent.com",

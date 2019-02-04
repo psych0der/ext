@@ -177,7 +177,7 @@ function createGmailSignInModal(sdk: InboxSDKInstance, onClearToken?: (onComplet
     })
   const modal = sdk.Widgets.showModalView({
     el,
-    title: 'Sendia - Gmail Access Required'
+    title: 'Sendia - Access Required'
   })
 }
 
