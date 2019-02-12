@@ -24,6 +24,13 @@ const lock = new window.Auth0Lock(
       params: {
         scope: 'openid offline_access email',
       }
+    },
+    theme: {
+      logo: settings.auth0.logo,
+      primaryColor: '#FFB300'
+    },
+    languageDictionary: {
+      title: 'Log in'
     }
   }
 )

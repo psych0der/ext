@@ -15,6 +15,7 @@ export default {
   } as ILabels,
   auth0: {
     clientId: 'pfthfYGxF7eyDpS844ZJ3yce9QbD9lfN',
-    domain: 'sendiateam.auth0.com'
+    domain: 'sendiateam.auth0.com',
+    logo: 'https://landen.imgix.net/4yi0tmwcd15u/assets/1lsb0eoo.png?w=400'
   }
 }

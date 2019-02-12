@@ -64,7 +64,8 @@ chrome.runtime.onMessage.addListener((message: messages.ITypes, sender, sendResp
     } else {
       const a = new Auth0(settings.auth0.domain, settings.auth0.clientId).authenticate({
         device: 'chrome-extension',
-        scope: 'openid email'
+        scope: 'openid email',
+        title: 'Log in'
       }).then((authResult: any) => {
         setAuthResult(authResult)
         notifs.auth0Success()
