@@ -17,6 +17,7 @@ const lock = new window.Auth0Lock(
   'sendiateam.auth0.com',
   {
     allowSignUp: false,
+    allowedConnections: ['google-oauth2'],
     autoclose: true,
     auth: {
       redirect: false,
