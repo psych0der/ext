@@ -266,6 +266,7 @@ function customTokenData(header: string[], rowData: any[]) {
     const d: any = {}
     console.log(header)
     header.forEach((h, i) => {
+      console.log(rowData[index])
       d[h] = rowData[index].values[i].formattedValue
     })
     return d

@@ -284,7 +284,7 @@ function emailsRemainingModalEl(
       `
     } else if (!auth.activeSubscription) {
       d.innerHTML += `
-        <p>You are logged in but don't have an active subscription! <a href="#">Click here to resubscribe.</a></p>
+        <p>You are logged in but don't have an active subscription! <a target="_blank" href="${settings.homePage}">Click here to subscribe.</a></p>
       `
     }
     // add send campaign button
@@ -310,7 +310,7 @@ function emailsRemainingModalEl(
     if (isModalDestroyed()) {
       clearInterval(int)
     }
-    if (initAuth.activeSubscription !== auth.activeSubscription || initAuth.isLoggedIn !== initAuth.isLoggedIn) {
+    if (initAuth.activeSubscription !== auth.activeSubscription || initAuth.isLoggedIn !== auth.isLoggedIn) {
       create()
       clearInterval(int)
     }

@@ -33,7 +33,7 @@ export async function sendCampaign(opts: ISendCampaignOptions, onComplete: (err:
   const recepients = opts.composeView.getToRecipients()
   const errors: string[] = []
   const timer = new TimeRecord()
-  const q = queue(sendEmail, 2)
+  const q = queue(sendEmail, 1)
   let skipCount = 0
   let sendCount = 0
   const saveText = document.createElement('span')
@@ -89,8 +89,7 @@ export async function sendCampaign(opts: ISendCampaignOptions, onComplete: (err:
     }
     sbjct = replaceTokens(tokenData, subject)
     msg = replaceTokens(tokenData, message)
-
-    q.push({
+    const sendOpts: ISendEmailOptions = {
       googleToken: opts.googleToken,
       message: msg,
       recepient: opts.testEmail ? opts.testEmail : rec.emailAddress,
@@ -99,11 +98,20 @@ export async function sendCampaign(opts: ISendCampaignOptions, onComplete: (err:
       unSubLink: `${opts.unSubLink}${rec.emailAddress}`,
       imgLink: `${settings.host}/campaign/open?campaignId=${opts.campaignId}&email=${rec.emailAddress}`,
       userType: opts.userType,
-      timer
-    }, (err: any, res: any) => {
+      timer,
+      failedCount: 0
+    }
+    const onSendError = (err: any, res: any) => {
       if (err) {
-        errors.push(err.message)
-        campaignResult.failedEmails.push(err.email)
+        if (sendOpts.failedCount < 1) {
+          sendOpts.failedCount = sendOpts.failedCount + 1
+          sendOpts.extraDelay = 1500
+          q.push(sendOpts, onSendError)
+          return
+        } else {
+          errors.push(err.message)
+          campaignResult.failedEmails.push(err.email)
+        }
       } else {
         campaignResult.sentEmails.push(res.email)
         campaignResult.sentThreadIds.push(res.threadId)
@@ -111,7 +119,8 @@ export async function sendCampaign(opts: ISendCampaignOptions, onComplete: (err:
       sendCount++
       saveText.innerText = `Sent ${sendCount}/${recepients.length} emails.`
       console.log('email sent', res)
-    })
+    }
+    q.push(sendOpts, onSendError)
     // this is a send test so we should break the loop
     if (opts.testEmail) {
       break
@@ -134,13 +143,18 @@ interface ISendEmailOptions {
   timer: TimeRecord,
   unSubLink?: string,
   imgLink?: string,
+  failedCount: number,
+  extraDelay?: number // in ms
 }
 
 export function sendEmail(options: ISendEmailOptions, cb: (err: null | any, res?: any) => void) {
   const now = Date.now()
   const timeDiff = now - options.timer.getLastSentDate()
+  const extraDelay = options.extraDelay ? options.extraDelay : 0
   console.log('difference ', timeDiff)
-  wait(timeDiff < settings.maxEmailSendInterval ? (settings.maxEmailSendInterval - timeDiff) : 0).then(() => {
+  wait(
+    timeDiff < settings.maxEmailSendInterval ? (settings.maxEmailSendInterval - timeDiff + extraDelay) : 0 + extraDelay
+    ).then(() => {
     const message = createMessage({
       from: options.userEmail,
       message: options.message,
