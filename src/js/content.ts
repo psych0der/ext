@@ -4,6 +4,8 @@ import app from './app/app'
 import { open, destroy } from "./app/components/db"
 import { checkSubscription } from "./app/components/server";
 import { InboxSDKInstance } from "inboxsdk"
+import { hasFirstTimeEmailSent, firstTimeEmailSent } from "./components/storage";
+import { createFirstTimeEmail } from "./app/components/reports";
 const jwtDecode = require('jwt-decode')
 
 declare global {
@@ -136,6 +138,15 @@ async function prepareApp(sdk: InboxSDKInstance) {
         // check if this email(using google token, NOT the auth0 token) has an active subscription.
         // if not, the user will need to login with their auth0 account
         console.log('checking sub')
+        hasFirstTimeEmailSent((hasSent) => {
+          if (!hasSent) {
+            createFirstTimeEmail(res.token).then(() => {
+              firstTimeEmailSent()
+            }).catch((err) => {
+              console.log(err)
+            })
+          }
+        })
         checkSubscription({
           accessToken: res.token,
           isGoogleToken: true
@@ -151,7 +162,7 @@ async function prepareApp(sdk: InboxSDKInstance) {
   })
 }
 
-function createGmailSignInModal(sdk: InboxSDKInstance, onClearToken?: (onComplete: () => void ) => void) {
+function createGmailSignInModal(sdk: InboxSDKInstance, onClearToken?: (onComplete: () => void) => void) {
   const el = document.createElement('div')
   const email = sdk.User.getEmailAddress()
   el.innerHTML = `

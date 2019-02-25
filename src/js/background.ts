@@ -124,9 +124,13 @@ function logIn(tabId: number) {
   })
 }
 
-/*
 isFirstTimeUser((isFirstTime) => {
   if (isFirstTime) {
+    chrome.tabs.create({
+      active: true,
+      url: 'https://mail.google.com/'
+    })
+    /*
     getToken((token, err) => {
       if (err) {
         notifs.firstTime(() => {
@@ -142,7 +146,6 @@ isFirstTimeUser((isFirstTime) => {
         })
       }
     })
+    */
   }
 })
-
-*/
